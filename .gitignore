@@ -55,3 +55,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+config.json
+*.jpg
+.idea
+.DS_Store
