@@ -1,0 +1,24 @@
+{
+  "username": "",
+  "password": "",
+  "street": "",
+  "zip": "",
+  "contact_name": "",
+  "phone_number": "",
+  "ads": [
+    {"postad_title": "",
+    "pstad_descrptn": "",
+    "pstad_price": "",
+    "price_type": "NEGOTIABLE",
+    "caturl": "",
+    "photofiles": []
+    },
+    {"postad_title": "",
+    "pstad_descrptn": "",
+    "pstad_price": "",
+    "price_type": "",
+    "caturl": "",
+    "photofiles": []
+    }
+  ]
+}
