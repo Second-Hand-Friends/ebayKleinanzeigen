@@ -1,27 +1,27 @@
 {
-  "username": "",
-  "password": "",
-  "street": "",
-  "zip": "",
-  "contact_name": "",
-  "phone_number": "",
-  "photo_path": "/path/to/photos/",
-  "ad_prefix": "Text to add which comes before the actual ad description.\nLeave free if not needed\n",
-  "ad_suffix": "Text to add which comes after the actual ad description.\nLeave free if not needed\n", 
+  "glob_username": "",
+  "glob_password": "",
+  "glob_street": "",
+  "glob_zip": "",
+  "glob_contact_name": "",
+  "glob_phone_number": "",
+  "glob_photo_path": "/path/to/photos/",
+  "glob_ad_prefix": "Text to add which comes before the actual ad description.\nLeave free if not needed\n",
+  "glob_ad_suffix": "Text to add which comes after the actual ad description.\nLeave free if not needed\n", 
   "ads": [
-    {"postad_title": "",
-    "pstad_descrptn": "",
-    "pstad_price": "",
-    "price_type": "NEGOTIABLE",
-    "caturl": "",
-    "photofiles": []
+    {"title": "",
+     "desc": "",
+     "price": "",
+     "price_type": "NEGOTIABLE",
+     "caturl": "",
+     "photofiles": []
     },
-    {"postad_title": "",
-    "pstad_descrptn": "",
-    "pstad_price": "",
-    "price_type": "",
-    "caturl": "",
-    "photofiles": []
+    {"title": "",
+     "desc": "",
+     "price": "",
+     "price_type": "FIXED",
+     "caturl": "",
+     "photofiles": []
     }
   ]
 }

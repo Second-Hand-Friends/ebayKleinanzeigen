@@ -44,8 +44,8 @@ def init_config():
 
 def login():
     global driver
-    input_email = config['username']
-    input_pw = config['password']
+    input_email = config['glob_username']
+    input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
     text_area = driver.find_element_by_id('login-email')
@@ -63,28 +63,17 @@ def fake_wait():
     log.debug("Waiting ...")
     time.sleep(randint(3,13))
 
-def post_ad(
-        postad_title,
-        pstad_descrptn,
-        pstad_price,
-        pstad_street,
-        pstad_zip,
-        postad_contactname,
-        caturl,
-        photofiles,
-        pstad_phone=None,
-        price_type=None
-):
+def post_ad(ad):
     global log
 
-    if pstad_phone is None:
-        pstad_phone = ''
+    if config['glob_phone'] is None:
+        config['glob_phone'] = ''
 
-    if price_type not in ['FIXED', 'NEGOTIABLE', 'GIVE_AWAY']:
-        price_type = 'FIXED'
+    if ad["price_type"] not in ['FIXED', 'NEGOTIABLE', 'GIVE_AWAY']:
+        ad["price_type"] = 'FIXED'
 
     # Navigate to page
-    driver.get(caturl)
+    driver.get(ad["cat_url"])
     log.debug("Navigating to category selection page.")
     fake_wait()
 
@@ -94,36 +83,36 @@ def post_ad(
 
     # Fill form
     text_area = driver.find_element_by_id('postad-title')
-    text_area.send_keys(postad_title)
+    text_area.send_keys(ad["title"])
     text_area = driver.find_element_by_id('pstad-descrptn')
-    pstad_descrptn = config['ad_prefix'] + pstad_descrptn + config['ad_suffix']
-    pstad_descrptnlist = [x.strip('\\n') for x in pstad_descrptn.split('\\n')]
-    for p in pstad_descrptnlist:
+    desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
+    desc_list = [x.strip('\\n') for x in desc.split('\\n')]
+    for p in desc_list:
         text_area.send_keys(p)
         text_area.send_keys(Keys.RETURN)
 
     text_area = driver.find_element_by_id('pstad-price')
-    text_area.send_keys(pstad_price)
-    price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % price_type)
+    text_area.send_keys(ad["price"])
+    price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
     price.click()
-    text_area = driver.find_element_by_id('pstad-zip')
+    text_area = driver.find_element_by_id('pstad-glob_zip')
     text_area.clear()
-    text_area.send_keys(pstad_zip)
+    text_area.send_keys(config["glob_zip"])
     text_area = driver.find_element_by_id('postad-phonenumber')
     text_area.clear()
-    text_area.send_keys(pstad_phone)
+    text_area.send_keys(config["glob_phone"])
     text_area = driver.find_element_by_id('postad-contactname')
     text_area.clear()
-    text_area.send_keys(postad_contactname)
-    text_area = driver.find_element_by_id('pstad-street')
+    text_area.send_keys(config["glob_contactname"])
+    text_area = driver.find_element_by_id('pstad-glob_street')
     text_area.clear()
-    text_area.send_keys(pstad_street)
+    text_area.send_keys(config["glob_street"])
 
     # Upload images
     fileup = driver.find_element_by_xpath("//input[@type='file']")
 
-    for path in photofiles:
-        path = config["photo_path"] + path
+    for path in ad["photofiles"]:
+        path = config["glob_photo_path"] + path
         uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
         fileup.send_keys(os.path.abspath(path))
         total_upload_time = 0
@@ -162,13 +151,8 @@ if __name__ == '__main__':
     init_config()
     login()
     for ad in config['ads']:
-        log.info('Posting ad titled "%s".' % ad['postad_title'])
-        post_ad(
-            pstad_street=config["street"],
-            pstad_zip=config["zip"],
-            pstad_phone=config["phone_number"],
-            postad_contactname=config["contact_name"],
-            **ad)
+        log.info('Posting ad titled "%s".' % ad['title'])
+        post_ad(ad)
 
     driver.close()
     currentdatetime = datetime.strptime(datetime.now().strftime("%d %b %Y, %H:%M:%S"), ("%d %b %Y, %H:%M:%S"))
