@@ -5,6 +5,9 @@
   "zip": "",
   "contact_name": "",
   "phone_number": "",
+  "photo_path": "/path/to/photos/",
+  "ad_prefix": "Text to add which comes before the actual ad description.\nLeave free if not needed\n",
+  "ad_suffix": "Text to add which comes after the actual ad description.\nLeave free if not needed\n", 
   "ads": [
     {"postad_title": "",
     "pstad_descrptn": "",
