@@ -118,20 +118,22 @@ def post_ad(ad):
     text_area.send_keys(config["glob_zip"])
     fake_wait()
 
-    text_area = driver.find_element_by_id('postad-phonenumber')
-    text_area.clear()
-    text_area.send_keys(config["glob_phone_number"])
-    fake_wait()
+    if config["glob_phone_number"]:
+        text_area = driver.find_element_by_id('postad-phonenumber')
+        text_area.clear()
+        text_area.send_keys(config["glob_phone_number"])
+        fake_wait()
 
     text_area = driver.find_element_by_id('postad-contactname')
     text_area.clear()
     text_area.send_keys(config["glob_contact_name"])
     fake_wait()
 
-    text_area = driver.find_element_by_id('pstad-street')
-    text_area.clear()
-    text_area.send_keys(config["glob_street"])
-    fake_wait()
+    if config["glob_street"]:
+        text_area = driver.find_element_by_id('pstad-street')
+        text_area.clear()
+        text_area.send_keys(config["glob_street"])
+        fake_wait()
 
     # Upload images
     fileup = driver.find_element_by_xpath("//input[@type='file']")
@@ -152,11 +154,9 @@ def post_ad(ad):
 
     submit_button = driver.find_element_by_id('pstad-frmprview')
     submit_button.click()
-    fake_wait()
 
     submit_button = driver.find_element_by_id('prview-btn-post')
     submit_button.click()
-    fake_wait()
 
     log.info("Posted as: %s" % driver.current_url)
     parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
