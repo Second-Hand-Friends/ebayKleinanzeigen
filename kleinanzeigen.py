@@ -96,6 +96,7 @@ def post_ad(
     text_area = driver.find_element_by_id('postad-title')
     text_area.send_keys(postad_title)
     text_area = driver.find_element_by_id('pstad-descrptn')
+    pstad_descrptn = config['ad_prefix'] + pstad_descrptn + config['ad_suffix']
     pstad_descrptnlist = [x.strip('\\n') for x in pstad_descrptn.split('\\n')]
     for p in pstad_descrptnlist:
         text_area.send_keys(p)
