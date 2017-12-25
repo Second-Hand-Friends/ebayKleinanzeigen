@@ -8,6 +8,7 @@ import json
 import os
 import time
 import urlparse
+from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import logging
@@ -58,6 +59,9 @@ def login():
 def delete_ad(ad_id):
     driver.get('https://www.ebay-kleinanzeigen.de/m-anzeigen-loeschen.json?ids=%s&pageNum=1' % ad_id)
 
+def fake_wait():
+    log.debug("Waiting ...")
+    time.sleep(randint(3,13))
 
 def post_ad(
         postad_title,
@@ -82,7 +86,7 @@ def post_ad(
     # Navigate to page
     driver.get(caturl)
     log.debug("Navigating to category selection page.")
-    time.sleep(1)
+    fake_wait()
 
     # Select category
     submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
@@ -118,23 +122,26 @@ def post_ad(
     fileup = driver.find_element_by_xpath("//input[@type='file']")
 
     for path in photofiles:
+        path = config["photo_path"] + path
         uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
         fileup.send_keys(os.path.abspath(path))
         total_upload_time = 0
         while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
                         total_upload_time < 30:
-            time.sleep(0.5)
+            fake_wait()
             total_upload_time += 0.5
 
         log.debug("Uploaded file in %s seconds." % total_upload_time)
 
+    fake_wait()
+
     submit_button = driver.find_element_by_id('pstad-frmprview')
     submit_button.click()
-    time.sleep(2)
+    fake_wait()
 
     submit_button = driver.find_element_by_id('prview-btn-post')
     submit_button.click()
-    time.sleep(2)
+    fake_wait()
     log.info("Posted as: %s" % driver.current_url)
     parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
     ad_id = parsed_q.get('adId', None)[0]
