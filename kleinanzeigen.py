@@ -51,10 +51,16 @@ def login():
     input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
+    fake_wait()
+    
     text_area = driver.find_element_by_id('login-email')
     text_area.send_keys(input_email)
+    fake_wait()
+
     text_area = driver.find_element_by_id('login-password')
     text_area.send_keys(input_pw)
+    fake_wait()
+
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
 
@@ -90,6 +96,8 @@ def post_ad(ad):
     # Fill form
     text_area = driver.find_element_by_id('postad-title')
     text_area.send_keys(ad["title"])
+    fake_wait()
+
     text_area = driver.find_element_by_id('pstad-descrptn')
     desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
     desc_list = [x.strip('\\n') for x in desc.split('\\n')]
