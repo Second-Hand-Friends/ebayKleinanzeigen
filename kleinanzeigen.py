@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=C0301
+# pylint: disable=C0111
+
 """
 Created on Tue Oct  6 00:15:14 2015
 
@@ -60,8 +63,9 @@ def delete_ad(ad_id):
     driver.get('https://www.ebay-kleinanzeigen.de/m-anzeigen-loeschen.json?ids=%s&pageNum=1' % ad_id)
 
 def fake_wait():
-    log.debug("Waiting ...")
-    time.sleep(randint(3,13))
+    num_secs = randint(3, 13)
+    log.debug("Waiting %d seconds ..." % num_secs)
+    time.sleep(num_secs)
 
 def post_ad(ad):
     global log
@@ -81,6 +85,8 @@ def post_ad(ad):
     submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
     submit_button.click()
 
+    fake_wait()
+
     # Fill form
     text_area = driver.find_element_by_id('postad-title')
     text_area.send_keys(ad["title"])
@@ -91,22 +97,33 @@ def post_ad(ad):
         text_area.send_keys(p)
         text_area.send_keys(Keys.RETURN)
 
+    fake_wait()
+
     text_area = driver.find_element_by_id('pstad-price')
     text_area.send_keys(ad["price"])
     price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
     price.click()
+    fake_wait()
+
     text_area = driver.find_element_by_id('pstad-zip')
     text_area.clear()
     text_area.send_keys(config["glob_zip"])
+    fake_wait()
+
     text_area = driver.find_element_by_id('postad-phonenumber')
     text_area.clear()
     text_area.send_keys(config["glob_phone_number"])
+    fake_wait()
+
     text_area = driver.find_element_by_id('postad-contactname')
     text_area.clear()
     text_area.send_keys(config["glob_contact_name"])
+    fake_wait()
+
     text_area = driver.find_element_by_id('pstad-street')
     text_area.clear()
     text_area.send_keys(config["glob_street"])
+    fake_wait()
 
     # Upload images
     fileup = driver.find_element_by_xpath("//input[@type='file']")
@@ -132,6 +149,7 @@ def post_ad(ad):
     submit_button = driver.find_element_by_id('prview-btn-post')
     submit_button.click()
     fake_wait()
+
     log.info("Posted as: %s" % driver.current_url)
     parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
     ad_id = parsed_q.get('adId', None)[0]
@@ -150,6 +168,8 @@ if __name__ == '__main__':
 
     init_config()
     login()
+    fake_wait()
+
     for ad in config['ads']:
         log.info('Posting ad titled "%s".' % ad['title'])
         post_ad(ad)
