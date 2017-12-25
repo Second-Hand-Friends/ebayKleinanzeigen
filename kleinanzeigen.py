@@ -66,14 +66,14 @@ def fake_wait():
 def post_ad(ad):
     global log
 
-    if config['glob_phone'] is None:
-        config['glob_phone'] = ''
+    if config['glob_phone_number'] is None:
+        config['glob_phone_number'] = ''
 
     if ad["price_type"] not in ['FIXED', 'NEGOTIABLE', 'GIVE_AWAY']:
-        ad["price_type"] = 'FIXED'
+        ad["price_type"] = 'NEGOTIABLE'
 
     # Navigate to page
-    driver.get(ad["cat_url"])
+    driver.get(ad["caturl"])
     log.debug("Navigating to category selection page.")
     fake_wait()
 
@@ -95,16 +95,16 @@ def post_ad(ad):
     text_area.send_keys(ad["price"])
     price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
     price.click()
-    text_area = driver.find_element_by_id('pstad-glob_zip')
+    text_area = driver.find_element_by_id('pstad-zip')
     text_area.clear()
     text_area.send_keys(config["glob_zip"])
     text_area = driver.find_element_by_id('postad-phonenumber')
     text_area.clear()
-    text_area.send_keys(config["glob_phone"])
+    text_area.send_keys(config["glob_phone_number"])
     text_area = driver.find_element_by_id('postad-contactname')
     text_area.clear()
-    text_area.send_keys(config["glob_contactname"])
-    text_area = driver.find_element_by_id('pstad-glob_street')
+    text_area.send_keys(config["glob_contact_name"])
+    text_area = driver.find_element_by_id('pstad-street')
     text_area.clear()
     text_area.send_keys(config["glob_street"])
 
