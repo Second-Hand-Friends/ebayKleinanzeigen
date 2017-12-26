@@ -72,13 +72,22 @@ def login():
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
 
-def delete_ad(ad_id):
-    driver.get('https://www.ebay-kleinanzeigen.de/m-anzeigen-loeschen.json?ids=%s&pageNum=1' % ad_id)
+def delete_ad(ad):
+    driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
+    fake_wait()
+    btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % ad["id"])    
+    if btn_del:
+        btn_del.click()
+        fake_wait()
+        btn_confirm_del = driver.find_element_by_id("modal-bulk-delete-ad-sbmt")
+        if btn_confirm_del:
+            btn_confirm_del.click()
 
-def fake_wait():
-    num_secs = randint(1, 7)
-    log.debug("Waiting %d seconds ..." % num_secs)
-    time.sleep(num_secs)
+def fake_wait(msSleep=None):
+    if msSleep is None:
+        msSleep = randint(700, 3333)
+    log.debug("Waiting %d ms ..." % msSleep)
+    time.sleep(msSleep / 1000)
 
 def post_ad(ad):
     global log
@@ -189,7 +198,9 @@ if __name__ == '__main__':
     dtNow = datetime.utcnow()
 
     for ad in config["ads"]:
-        fDoUpdate = False
+        
+        fNeedsUpdate = False
+        fPublished   = False
         
         log.info("Handling '%s'" % ad["title"])
 
@@ -197,14 +208,18 @@ if __name__ == '__main__':
             dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
-        dtDiff            = dtNow - dtLastUpdated
+        dtDiff            = dtNow - dtLastUpdated      
 
-        log.info("Age is %d days" % dtDiff.days)
+        if "id" in ad:
+            log.info("\tAlready published (%d days ago)" % dtDiff.days)
+            fPublished = True
+            if dtDiff.days > 4:
+                fNeedsUpdate = True
+        else:
+            log.info("\tNot published yet")
+            fNeedsUpdate = True
 
-        if dtDiff.days > 4:
-            fDoUpdate = True
-
-        if fDoUpdate \
+        if fNeedsUpdate \
         or fForceUpdate:
 
             if fDoLogin:
@@ -212,15 +227,17 @@ if __name__ == '__main__':
                 fake_wait()
                 fDoLogin = False
 
-            if "id" in ad:
-                log.info("Deleting existing ad (%s)" % ad["id"])
-                delete_ad(ad["id"])
+            if fPublished:
+                log.info("\tDeleting existing ad (%s)" % ad["id"])
+                delete_ad(ad)
                 fake_wait()
             else:
                 ad["date_posted"] = datetime.utcnow()
 
-            log.info("Posting new ad ...")
+            log.info("\tPublishing ad ...")
             post_ad(ad)
+
+            time.sleep(15 * 1000)
 
     write_config()
 
