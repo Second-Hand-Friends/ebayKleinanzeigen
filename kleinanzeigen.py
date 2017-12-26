@@ -16,6 +16,11 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import logging
 from datetime import datetime
+import dateutil.parser
+
+json.JSONEncoder.default = \
+    lambda self, obj: \
+        (obj.isoformat() if isinstance(obj, datetime) else None)
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -30,20 +35,23 @@ formatter = logging.Formatter('%(asctime)s %(message)s')
 log.addHandler(ch)
 log.addHandler(fh)
 
-log.info('Kleinanzeigen script started.')
+log.info('Script started')
 log.debug('\n')
 
 config = {}
 driver = webdriver.Firefox()
 driver.implicitly_wait(10)
 
-
-def init_config():
-    config_file = "config.json"
-    if os.path.isfile(config_file):
-        with open(config_file) as data:
+def read_config():
+    fhConfig = "config.json"
+    if os.path.isfile(fhConfig):
+        with open(fhConfig) as data:
             config.update(json.load(data))
 
+def write_config():
+    fhConfig = open("config.json", "w+")
+    fhConfig.write(json.dumps(config, sort_keys=True, indent=4))
+    fhConfig.close()
 
 def login():
     global driver
@@ -64,12 +72,11 @@ def login():
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
 
-
 def delete_ad(ad_id):
     driver.get('https://www.ebay-kleinanzeigen.de/m-anzeigen-loeschen.json?ids=%s&pageNum=1' % ad_id)
 
 def fake_wait():
-    num_secs = randint(3, 13)
+    num_secs = randint(1, 7)
     log.debug("Waiting %d seconds ..." % num_secs)
     time.sleep(num_secs)
 
@@ -160,28 +167,62 @@ def post_ad(ad):
 
     log.info("Posted as: %s" % driver.current_url)
     parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
-    ad_id = parsed_q.get('adId', None)[0]
-    if ad_id:
-        log.info("New ad id: %s." % ad_id)
+    ad["id"] = parsed_q.get('adId', None)[0]
+    if "id" in ad:
+        log.info("New ad ID: %s" % ad["id"])
     else:
-        log.info("Error posting/retrieving new id.")
+        log.info("Error posting/retrieving new ID")
 
-    return ad_id
+    ad["date_updated"] = datetime.utcnow()
+
+    return
 
 
 if __name__ == '__main__':
-    log.info("Script for ebay Kleinanzeigen started")
-    currentdatetime = datetime.strptime(datetime.now().strftime("%d %b %Y, %H:%M:%S"), ("%d %b %Y, %H:%M:%S"))
-    log.info("Script started at %s" % currentdatetime)
+    log.info("Script started")
 
-    init_config()
-    login()
-    fake_wait()
+    read_config()
 
-    for ad in config['ads']:
-        log.info('Posting ad titled "%s".' % ad['title'])
-        post_ad(ad)
+    fForceUpdate = False
+    fDoLogin     = True
+
+    dtNow = datetime.utcnow()
+
+    for ad in config["ads"]:
+        fDoUpdate = False
+        
+        log.info("Handling '%s'" % ad["title"])
+
+        if "date_updated" in ad:
+            dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
+        else:
+            dtLastUpdated = dtNow
+        dtDiff            = dtNow - dtLastUpdated
+
+        log.info("Age is %d days" % dtDiff.days)
+
+        if dtDiff.days > 4:
+            fDoUpdate = True
+
+        if fDoUpdate \
+        or fForceUpdate:
+
+            if fDoLogin:
+                login()
+                fake_wait()
+                fDoLogin = False
+
+            if "id" in ad:
+                log.info("Deleting existing ad (%s)" % ad["id"])
+                delete_ad(ad["id"])
+                fake_wait()
+            else:
+                ad["date_posted"] = datetime.utcnow()
+
+            log.info("Posting new ad ...")
+            post_ad(ad)
+
+    write_config()
 
     driver.close()
-    currentdatetime = datetime.strptime(datetime.now().strftime("%d %b %Y, %H:%M:%S"), ("%d %b %Y, %H:%M:%S"))
-    log.info('Script done at %s' % currentdatetime)
+    log.info("Script done")
