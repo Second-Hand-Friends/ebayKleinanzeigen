@@ -210,7 +210,8 @@ if __name__ == '__main__':
             dtLastUpdated = dtNow
         dtDiff            = dtNow - dtLastUpdated      
 
-        if ad["enabled"] == "1":
+        if  "enabled" in ad \
+        and ad["enabled"] == "1":
             if "id" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
                 fPublished = True
