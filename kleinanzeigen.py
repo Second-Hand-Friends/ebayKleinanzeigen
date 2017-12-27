@@ -210,14 +210,17 @@ if __name__ == '__main__':
             dtLastUpdated = dtNow
         dtDiff            = dtNow - dtLastUpdated      
 
-        if "id" in ad:
-            log.info("\tAlready published (%d days ago)" % dtDiff.days)
-            fPublished = True
-            if dtDiff.days > 4:
+        if ad["enabled"] == "1":
+            if "id" in ad:
+                log.info("\tAlready published (%d days ago)" % dtDiff.days)
+                fPublished = True
+                if dtDiff.days > 4:
+                    fNeedsUpdate = True
+            else:
+                log.info("\tNot published yet")
                 fNeedsUpdate = True
         else:
-            log.info("\tNot published yet")
-            fNeedsUpdate = True
+            log.info("\tDisabled, skipping")
 
         if fNeedsUpdate \
         or fForceUpdate:

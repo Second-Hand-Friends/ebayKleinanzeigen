@@ -11,6 +11,7 @@
   "ads": [
     {"title": "",
      "desc": "",
+     "enabled": "1",
      "price": "",
      "price_type": "NEGOTIABLE",
      "caturl": "",
@@ -18,6 +19,7 @@
     },
     {"title": "",
      "desc": "",
+     "enabled": "1",
      "price": "",
      "price_type": "FIXED",
      "caturl": "",
