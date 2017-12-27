@@ -60,7 +60,7 @@ def login():
     log.info("Login with account email: " + input_email)
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
     fake_wait()
-    
+
     text_area = driver.find_element_by_id('login-email')
     text_area.send_keys(input_email)
     fake_wait()
@@ -75,7 +75,7 @@ def login():
 def delete_ad(ad):
     driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
     fake_wait()
-    btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % ad["id"])    
+    btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % ad["id"])
     if btn_del:
         btn_del.click()
         fake_wait()
@@ -198,17 +198,17 @@ if __name__ == '__main__':
     dtNow = datetime.utcnow()
 
     for ad in config["ads"]:
-        
+
         fNeedsUpdate = False
         fPublished   = False
-        
+
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
             dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
-        dtDiff            = dtNow - dtLastUpdated      
+        dtDiff            = dtNow - dtLastUpdated
 
         if  "enabled" in ad \
         and ad["enabled"] == "1":
