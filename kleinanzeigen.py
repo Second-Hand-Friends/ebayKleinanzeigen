@@ -211,7 +211,7 @@ if __name__ == '__main__':
 
         if  "enabled" in ad \
         and ad["enabled"] == "1":
-            if "date_posted" in ad:
+            if "date_published" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
                 if dtDiff.days > 4:
                     fNeedsUpdate = True
@@ -237,7 +237,7 @@ if __name__ == '__main__':
                 delete_ad(ad)
                 fake_wait()
             else:
-                ad["date_posted"] = datetime.utcnow()
+                ad["date_published"] = datetime.utcnow()
 
             log.info("\tPublishing ad ...")
             post_ad(ad)
