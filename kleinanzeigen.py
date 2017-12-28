@@ -200,7 +200,6 @@ if __name__ == '__main__':
     for ad in config["ads"]:
 
         fNeedsUpdate = False
-        fPublished   = False
 
         log.info("Handling '%s'" % ad["title"])
 
@@ -212,9 +211,8 @@ if __name__ == '__main__':
 
         if  "enabled" in ad \
         and ad["enabled"] == "1":
-            if "id" in ad:
+            if "date_posted" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
-                fPublished = True
                 if dtDiff.days > 4:
                     fNeedsUpdate = True
             else:
@@ -230,8 +228,11 @@ if __name__ == '__main__':
                 login()
                 fake_wait()
                 fDoLogin = False
+            else:
+                log.info("Waiting for handling next ad ...")
+                time.sleep(15)
 
-            if fPublished:
+            if "id" in ad:
                 log.info("\tDeleting existing ad (%s)" % ad["id"])
                 delete_ad(ad)
                 fake_wait()
@@ -240,8 +241,6 @@ if __name__ == '__main__':
 
             log.info("\tPublishing ad ...")
             post_ad(ad)
-
-            time.sleep(15 * 1000)
 
     write_config()
 
