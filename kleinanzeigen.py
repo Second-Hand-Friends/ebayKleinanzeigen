@@ -15,6 +15,7 @@ import urlparse
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
 import dateutil.parser
@@ -73,25 +74,76 @@ def login():
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
 
-def delete_ad(ad):
-    driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
-    fake_wait()
-    btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % ad["id"])
-    if btn_del:
-        btn_del.click()
-        fake_wait()
-        btn_confirm_del = driver.find_element_by_id("modal-bulk-delete-ad-sbmt")
-        if btn_confirm_del:
-            btn_confirm_del.click()
-
 def fake_wait(msSleep=None):
     if msSleep is None:
-        msSleep = randint(700, 3333)
+        msSleep = randint(777, 3333)
+    if msSleep < 100:
+        msSleep = 100
     log.debug("Waiting %d ms ..." % msSleep)
     time.sleep(msSleep / 1000)
 
+def delete_ad(ad):
+    global log
+
+    log.info("\tDeleting ad ...")
+
+    driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
+    fake_wait()
+
+    fFound = False
+
+    if "id" in ad:
+        log.info("\tSearching by ID")
+        try:
+            btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % ad["id"])
+            btn_del.click()
+
+            fake_wait()
+
+            fFound = True
+
+        except NoSuchElementException as e:
+            print str(e)
+
+    if not fFound:
+        log.info("\tSearching by title")
+        try:
+            adIdElem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
+            adId     = adIdElem.get_attribute("data-adid")
+            if adId is not None:
+                log.info("\tAd ID is now %s" % adId)
+
+                btn_del = driver.find_element_by_xpath("//a[@data-adid='%s' and @data-gaevent='MyAds,DeleteAdBegin']" % adId)
+                btn_del.click()
+
+                fake_wait()
+
+                fFound = True
+
+        except NoSuchElementException as e:
+            pass
+
+    if fFound:
+
+        fake_wait()
+
+        try:
+            btn_confirm_del = driver.find_element_by_id("modal-bulk-delete-ad-sbmt")
+            btn_confirm_del.click()
+
+            log.info("\tAd deleted")
+
+        except NoSuchElementException as e:
+            print str(e)
+    else:
+        log.info("\tAd does not exist (anymore)")
+
+    ad.pop("id", None)
+
 def post_ad(ad):
     global log
+
+    log.info("\tPublishing ad ...")
 
     if config['glob_phone_number'] is None:
         config['glob_phone_number'] = ''
@@ -101,14 +153,12 @@ def post_ad(ad):
 
     # Navigate to page
     driver.get(ad["caturl"])
-    log.debug("Navigating to category selection page.")
-    fake_wait()
+    fake_wait(randint(4000, 8000))
 
     # Select category
     submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
     submit_button.click()
-
-    fake_wait()
+    fake_wait(randint(4000, 8000))
 
     # Fill form
     text_area = driver.find_element_by_id('postad-title')
@@ -165,24 +215,29 @@ def post_ad(ad):
             fake_wait()
             total_upload_time += 0.5
 
-        log.debug("Uploaded file in %s seconds." % total_upload_time)
+        log.debug("\tUploaded file in %s seconds." % total_upload_time)
 
     fake_wait()
 
     submit_button = driver.find_element_by_id('pstad-frmprview')
-    submit_button.click()
+    if submit_button:
+        submit_button.click()
+
+    fake_wait()
 
     submit_button = driver.find_element_by_id('prview-btn-post')
-    submit_button.click()
+    if submit_button:
+        submit_button.click()
 
-    log.info("Posted as: %s" % driver.current_url)
+    log.info("\tPosted as: %s" % driver.current_url)
+
     parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
-    ad["id"] = parsed_q.get('adId', None)[0]
-    if "id" in ad:
-        log.info("New ad ID: %s" % ad["id"])
-    else:
-        log.info("Error posting/retrieving new ID")
+    addId = parsed_q.get('adId', None)[0]
+    if "id" not in ad:
+        log.info("\tNew ad ID: %s" % addId)
+        ad["date_published"] = datetime.utcnow()
 
+    ad["id"]           = addId
     ad["date_updated"] = datetime.utcnow()
 
     return
@@ -233,17 +288,12 @@ if __name__ == '__main__':
                 log.info("Waiting for handling next ad ...")
                 time.sleep(15)
 
-            if "id" in ad:
-                log.info("\tDeleting existing ad (%s)" % ad["id"])
-                delete_ad(ad)
-                fake_wait()
-            else:
-                ad["date_published"] = datetime.utcnow()
+            delete_ad(ad)
+            fake_wait()
 
-            log.info("\tPublishing ad ...")
             post_ad(ad)
 
-    write_config()
+        write_config()
 
     driver.close()
     log.info("Script done")
