@@ -225,9 +225,20 @@ def post_ad(ad):
 
     fake_wait()
 
-    submit_button = driver.find_element_by_id('prview-btn-post')
-    if submit_button:
-        submit_button.click()
+    try:
+        submit_button = driver.find_element_by_id('prview-btn-post')
+        if submit_button:
+            submit_button.click()
+    except NoSuchElementException:
+        pass
+
+    try:
+        captcha_field = driver.find_element_by_id('recaptcha_response_field')
+        if captcha_field:
+            log.info("\t*** Manual captcha input needed! ***")
+            raw_input("\tFill out captcha and submit, after that press Enter here to continue ...")
+    except NoSuchElementException:
+        pass
 
     log.info("\tPosted as: %s" % driver.current_url)
 
