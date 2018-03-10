@@ -140,10 +140,12 @@ def delete_ad(ad):
 
     ad.pop("id", None)
 
-def post_ad(ad):
+def post_ad(ad, fInteractive):
     global log
 
-    log.info("\tPublishing ad ...")
+    fRc = True
+
+    log.info("\tPublishing ad '...")
 
     if config['glob_phone_number'] is None:
         config['glob_phone_number'] = ''
@@ -235,23 +237,39 @@ def post_ad(ad):
     try:
         captcha_field = driver.find_element_by_id('recaptcha_response_field')
         if captcha_field:
-            log.info("\t*** Manual captcha input needed! ***")
-            raw_input("\tFill out captcha and submit, after that press Enter here to continue ...")
+            if fInteractive:            
+                log.info("\t*** Manual captcha input needed! ***")
+                raw_input("\tFill out captcha and submit, after that press Enter here to continue ...")
+            else:
+                log.info("\tCaptcha input needed, but running in non-interactive mode! Skipping ...")
     except NoSuchElementException:
         pass
 
-    log.info("\tPosted as: %s" % driver.current_url)
+    try:
+        parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
+        addId = parsed_q.get('adId', None)[0]
+        log.info("\tPosted as: %s" % driver.current_url)
+        if "id" not in ad:
+            log.info("\tNew ad ID: %s" % addId)
+            ad["date_published"] = datetime.utcnow()
 
-    parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
-    addId = parsed_q.get('adId', None)[0]
-    if "id" not in ad:
-        log.info("\tNew ad ID: %s" % addId)
-        ad["date_published"] = datetime.utcnow()
+        ad["id"]           = addId
+        ad["date_updated"] = datetime.utcnow()
+    except:
+        pass
 
-    ad["id"]           = addId
-    ad["date_updated"] = datetime.utcnow()
+    try:
+        shopping_cart = driver.find_element_by_id('myftr-shppngcrt-frm')
+        if shopping_cart:
+            log.info("\t*** Monthly limit of free ads per account reached! Skipping ... ***")
+            fRc = False
+    except:
+        pass
 
-    return
+    if fRc is False:
+        log.info("\tError publishing ad")
+
+    return fRc
 
 
 if __name__ == '__main__':
@@ -302,7 +320,9 @@ if __name__ == '__main__':
             delete_ad(ad)
             fake_wait()
 
-            post_ad(ad)
+            fPosted = post_ad(ad, True)
+            if not fPosted:
+                break
 
         write_config()
 
