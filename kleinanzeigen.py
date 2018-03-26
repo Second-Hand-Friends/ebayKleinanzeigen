@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301
 # pylint: disable=C0111
@@ -9,7 +10,9 @@ Updated and improved by x86dev Dec 2017.
 @author: Leo; Eduardo; x86dev
 """
 import json
+import getopt
 import os
+import sys
 import time
 import urlparse
 from random import randint
@@ -41,18 +44,18 @@ log.info('Script started')
 log.debug('\n')
 
 config = {}
+
 driver = webdriver.Firefox()
 driver.implicitly_wait(10)
 
-def read_config():
-    fhConfig = "config.json"
-    if os.path.isfile(fhConfig):
-        with open(fhConfig) as data:
-            config.update(json.load(data))
+def profile_read(sProfile, oConfig):
+    if os.path.isfile(sProfile):
+        with open(sProfile) as data:
+            oConfig.update(json.load(data))
 
-def write_config():
-    fhConfig = open("config.json", "w+")
-    fhConfig.write(json.dumps(config, sort_keys=True, indent=4))
+def profile_write(sProfile, oConfig):
+    fhConfig = open(sProfile, "w+")
+    fhConfig.write(json.dumps(oConfig, sort_keys=True, indent=4))
     fhConfig.close()
 
 def login():
@@ -275,7 +278,26 @@ def post_ad(ad, fInteractive):
 if __name__ == '__main__':
     log.info("Script started")
 
-    read_config()
+    try:
+        aOpts, aArgs = getopt.gnu_getopt(sys.argv[1:], "ph", ["profile=", "help" ])
+    except getopt.error, msg:
+        print msg
+        print "For help use --help"
+        sys.exit(2)
+
+    sProfile = ""
+
+    for o, a in aOpts:
+        if o in ("--profile"):
+            sProfile = a
+
+    if not sProfile:
+        print "No profile specified"
+        sys.exit(2)
+
+    log.info("Using profile: %s" % sProfile)
+
+    profile_read(sProfile, config)
 
     fForceUpdate = False
     fDoLogin     = True
@@ -324,7 +346,7 @@ if __name__ == '__main__':
             if not fPosted:
                 break
 
-        write_config()
+        profile_write(sProfile, config)
 
     driver.close()
     log.info("Script done")
