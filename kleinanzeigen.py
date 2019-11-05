@@ -15,7 +15,6 @@ import os
 import signal
 import sys
 import time
-import urlparse
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -24,10 +23,6 @@ from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
 import dateutil.parser
-
-json.JSONEncoder.default = \
-    lambda self, obj: \
-        (obj.isoformat() if isinstance(obj, datetime) else None)
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -42,17 +37,20 @@ formatter = logging.Formatter('%(asctime)s %(message)s')
 log.addHandler(ch)
 log.addHandler(fh)
 
-def profile_read(sProfile, oConfig):
-    if os.path.isfile(sProfile):
-        with open(sProfile) as data:
-            oConfig.update(json.load(data))
 
-def profile_write(sProfile, oConfig):
-    fhConfig = open(sProfile, "w+")
-    fhConfig.write(json.dumps(oConfig, sort_keys=True, indent=4))
-    fhConfig.close()
+def profile_read(profile, config):
+    if os.path.isfile(profile):
+        with open(profile, encoding="utf-8") as file:
+            config.update(json.load(file))
 
-def login(driverr, config):
+
+def profile_write(profile, config):
+    with open(profile, "w+", encoding='utf8') as fh_config:
+        text = json.dumps(config, sort_keys=True, indent=4, ensure_ascii=False)
+        fh_config.write(text)
+
+
+def login(config):
     input_email = config['glob_username']
     input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
@@ -70,44 +68,44 @@ def login(driverr, config):
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
 
-def fake_wait(msSleep=None):
-    if msSleep is None:
-        msSleep = randint(777, 3333)
-    if msSleep < 100:
-        msSleep = 100
-    log.debug("Waiting %d ms ..." % msSleep)
-    time.sleep(msSleep / 1000)
+
+def fake_wait(ms_sleep=None):
+    if ms_sleep is None:
+        ms_sleep = randint(777, 3333)
+    if ms_sleep < 100:
+        ms_sleep = 100
+    log.debug("Waiting %d ms ..." % ms_sleep)
+    time.sleep(ms_sleep / 1000)
+
 
 def delete_ad(driver, ad):
-
     log.info("\tDeleting ad ...")
 
     driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
     fake_wait()
 
     fFound = False
-
-    adIdElem = None
+    ad_id_elem = None
 
     if "id" in ad:
         log.info("\tSearching by ID")
         try:
-            adIdElem = driver.find_element_by_xpath("//a[@data-adid='%s']" % ad["id"])
+            ad_id_elem = driver.find_element_by_xpath("//a[@data-adid='%s']" % ad["id"])
         except NoSuchElementException as e:
             log.info("\tNot found by ID")
 
     if not fFound:
         log.info("\tSearching by title")
         try:
-            adIdElem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
-            adId     = adIdElem.get_attribute("data-adid")
-            log.info("\tAd ID is %s" % adId)            
+            ad_id_elem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
+            ad_id = ad_id_elem.get_attribute("data-adid")
+            log.info("\tAd ID is %s" % ad_id)
         except NoSuchElementException as e:
             log.info("\tNot found by title")
 
-    if adIdElem is not None:
+    if ad_id_elem is not None:
         try:
-            btn_del = adIdElem.find_element_by_class_name("managead-listitem-action-delete")
+            btn_del = ad_id_elem.find_element_by_class_name("managead-listitem-action-delete")
             btn_del.click()
 
             fake_wait()
@@ -124,9 +122,10 @@ def delete_ad(driver, ad):
 
     ad.pop("id", None)
 
+
 # From: https://stackoverflow.com/questions/983354/how-do-i-make-python-to-wait-for-a-pressed-key
 def wait_key():
-    ''' Wait for a key press on the console and return it. '''
+    """ Wait for a key press on the console and return it. """
     result = None
     if os.name == 'nt':
         import msvcrt
@@ -149,40 +148,40 @@ def wait_key():
 
     return result
 
-def post_ad_has_captcha(driver, ad, fInteractive):
 
-    fRc = False
+def post_ad_has_captcha(driver):
+    has_captcha = False
 
     try:
         captcha_field = driver.find_element_by_xpath('//*[@id="postAd-recaptcha"]')
         if captcha_field:
-            fRc = True
+            has_captcha = True
     except NoSuchElementException:
         pass
 
-    log.info("Captcha: %s" % fRc)
+    log.info(f"Captcha: {has_captcha}")
 
-    return fRc
+    return has_captcha
 
-def post_ad_is_allowed(driver, ad, fInteractive):
 
-    fRc = True
+def post_ad_is_allowed(driver):
+    is_allowed = True
 
     # Try checking for the monthly limit per account first.
     try:
         shopping_cart = driver.find_elements_by_xpath('/html/body/div[1]/form/fieldset[6]/div[1]/header')
         if shopping_cart:
             log.info("\t*** Monthly limit of free ads per account reached! Skipping ... ***")
-            fRc = False
+            is_allowed = False
     except:
         pass
 
-    log.info("Ad posting allowed: %s" % fRc)
+    log.info(f"Ad posting allowed: {is_allowed}")
 
-    return fRc
+    return is_allowed
 
-def post_ad(driver, ad, fInteractive):
 
+def post_ad(driver, ad, interactive):
     log.info("\tPublishing ad '...")
 
     if config['glob_phone_number'] is None:
@@ -197,11 +196,12 @@ def post_ad(driver, ad, fInteractive):
 
     # Select category
     submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
+
     submit_button.click()
     fake_wait(randint(4000, 8000))
 
     # Check if posting an ad is allowed / possible
-    fRc = post_ad_is_allowed(driver, ad, fInteractive)
+    fRc = post_ad_is_allowed(driver)
     if fRc is False:
         return fRc
 
@@ -257,7 +257,7 @@ def post_ad(driver, ad, fInteractive):
             fileup.send_keys(os.path.abspath(path_abs))
             total_upload_time = 0
             while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
-                            total_upload_time < 30:
+                    total_upload_time < 30:
                 fake_wait()
                 total_upload_time += 0.5
 
@@ -273,9 +273,9 @@ def post_ad(driver, ad, fInteractive):
 
     fake_wait()
 
-    fHasCaptcha = post_ad_has_captcha(driver, ad, fInteractive)
-    if fHasCaptcha:
-        if fInteractive:
+    has_captcha = post_ad_has_captcha(driver)
+    if has_captcha:
+        if interactive:
             log.info("\t*** Manual captcha input needed! ***")
             log.info("\tFill out captcha and submit, after that press Enter here to continue ...")
             wait_key()
@@ -292,14 +292,14 @@ def post_ad(driver, ad, fInteractive):
             pass
 
         try:
-            parsed_q = urlparse.parse_qs(urlparse.urlparse(driver.current_url).query)
-            addId = parsed_q.get('adId', None)[0]
-            log.info("\tPosted as: %s" % driver.current_url)
+            parsed_q = urllib.parse.parse_qs(urllib.parse.urlparse(driver.current_url).query)
+            add_id = parsed_q.get('adId', None)[0]
+            log.info(f"\tPosted as: {driver.current_url}")
             if "id" not in ad:
-                log.info("\tNew ad ID: %s" % addId)
+                log.info(f"\tNew ad ID: {add_id}")
                 ad["date_published"] = datetime.utcnow()
 
-            ad["id"]           = addId
+            ad["id"] = add_id
             ad["date_updated"] = datetime.utcnow()
         except:
             pass
@@ -309,8 +309,8 @@ def post_ad(driver, ad, fInteractive):
 
     return fRc
 
-def session_create(config):
 
+def session_create(config):
     log.info("Creating session")
 
     options = Options()
@@ -326,8 +326,8 @@ def session_create(config):
 
     return driver
 
-def session_attach(config):
 
+def session_attach(config):
     log.info("Trying to attach to session %s %s" % (config['session_id'], config['session_url']))
 
     # Save the original function, so we can revert our patch
@@ -359,29 +359,31 @@ def session_attach(config):
 
     return driver
 
+
 def signal_handler(sig, frame):
     print('Exiting script')
     sys.exit(0)
+
 
 if __name__ == '__main__':
 
     signal.signal(signal.SIGINT, signal_handler)
 
     try:
-        aOpts, aArgs = getopt.gnu_getopt(sys.argv[1:], "ph", ["profile=", "help" ])
-    except getopt.error, msg:
-        print msg
-        print "For help use --help"
+        aOpts, aArgs = getopt.gnu_getopt(sys.argv[1:], "ph", ["profile=", "help"])
+    except getopt.error as msg:
+        print(msg)
+        print("For help use --help")
         sys.exit(2)
 
     sProfile = ""
 
     for o, a in aOpts:
-        if o in ("--profile"):
+        if o in "--profile":
             sProfile = a
 
     if not sProfile:
-        print "No profile specified"
+        print("No profile specified")
         sys.exit(2)
 
     log.info('Script started')
@@ -395,7 +397,7 @@ if __name__ == '__main__':
         config['headless'] = False
 
     fForceUpdate = False
-    fDoLogin     = True
+    fDoLogin = True
 
     dtNow = datetime.utcnow()
 
@@ -407,7 +409,7 @@ if __name__ == '__main__':
     if driver is None:
         driver = session_create(config)
         profile_write(sProfile, config)
-        login(driver, config)
+        login(config)
         fake_wait(randint(12222, 17777))        
 
     for ad in config["ads"]:
@@ -420,10 +422,10 @@ if __name__ == '__main__':
             dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
-        dtDiff            = dtNow - dtLastUpdated
+        dtDiff = dtNow - dtLastUpdated
 
-        if  "enabled" in ad \
-        and ad["enabled"] == "1":
+        if "enabled" in ad \
+                and ad["enabled"] == "1":
             if "date_published" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
                 if dtDiff.days > 4:
@@ -435,7 +437,7 @@ if __name__ == '__main__':
             log.info("\tDisabled, skipping")
 
         if fNeedsUpdate \
-        or fForceUpdate:
+                or fForceUpdate:
 
             delete_ad(driver, ad)
             fake_wait(randint(12222, 17777))
@@ -445,7 +447,7 @@ if __name__ == '__main__':
                 break
 
             log.info("Waiting for handling next ad ...")
-            fake_wait(randint(12222, 17777))            
+            fake_wait(randint(12222, 17777))
 
         profile_write(sProfile, config)
 
