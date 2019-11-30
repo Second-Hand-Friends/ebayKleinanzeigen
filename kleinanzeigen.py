@@ -23,6 +23,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
+from selenium.webdriver.support.ui import Select
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -219,6 +220,16 @@ def post_ad(driver, ad, interactive):
 
     fake_wait()
 
+    if (ad['shipping_type']) != 'NONE':
+        select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
+        shippment_select = Select(select_element)
+        log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
+        if (ad['shipping_type']) == 'PICKUP':
+            shippment_select.select_by_visible_text("Nur Abholung")
+        if (ad['shipping_type']) == 'SHIPPING':
+            shippment_select.select_by_visible_text("Versand möglich")
+        fake_wait()
+
     text_area = driver.find_element_by_id('pstad-price')
     text_area.send_keys(ad["price"])
     price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
@@ -410,7 +421,7 @@ if __name__ == '__main__':
         driver = session_create(config)
         profile_write(sProfile, config)
         login(config)
-        fake_wait(randint(12222, 17777))        
+        fake_wait(randint(12222, 17777))
 
     for ad in config["ads"]:
 
