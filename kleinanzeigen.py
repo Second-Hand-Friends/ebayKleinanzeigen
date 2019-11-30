@@ -221,17 +221,21 @@ def post_ad(driver, ad, interactive):
     fake_wait()
 
     if (ad['shipping_type']) != 'NONE':
-        select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
-        shippment_select = Select(select_element)
-        log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
-        if (ad['shipping_type']) == 'PICKUP':
-            shippment_select.select_by_visible_text("Nur Abholung")
-        if (ad['shipping_type']) == 'SHIPPING':
-            shippment_select.select_by_visible_text("Versand möglich")
-        fake_wait()
+        try:
+            select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
+            shippment_select = Select(select_element)
+            log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
+            if (ad['shipping_type']) == 'PICKUP':
+                shippment_select.select_by_visible_text("Nur Abholung")
+            if (ad['shipping_type']) == 'SHIPPING':
+                shippment_select.select_by_visible_text("Versand möglich")
+            fake_wait()
+        except NoSuchElementException:
+            pass
 
     text_area = driver.find_element_by_id('pstad-price')
-    text_area.send_keys(ad["price"])
+    if ad["price_type"] != 'GIVE_AWAY':
+        text_area.send_keys(ad["price"])
     price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
     price.click()
     fake_wait()
@@ -261,11 +265,13 @@ def post_ad(driver, ad, interactive):
     # Upload images
     try:
         fileup = driver.find_element_by_xpath("//input[@type='file']")
-        for path in ad["photofiles"]:
-            path_abs = config["glob_photo_path"] + path
+        path = ad["photo_files_path"]
+        path_abs = config["glob_photo_path"] + path
+        for filename in os.listdir(path_abs):
+            file_path_abs = path_abs + '/' + filename
             uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
-            log.debug("\tUploading image: %s" % path_abs)
-            fileup.send_keys(os.path.abspath(path_abs))
+            log.debug("\tUploading image: %s" % file_path_abs)
+            fileup.send_keys(os.path.abspath(file_path_abs))
             total_upload_time = 0
             while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
                     total_upload_time < 30:
