@@ -23,7 +23,6 @@ from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
-import dateutil.parser
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
