@@ -15,6 +15,7 @@ import os
 import signal
 import sys
 import time
+import urllib.parse
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -297,10 +298,10 @@ def post_ad(driver, ad, interactive):
             log.info(f"\tPosted as: {driver.current_url}")
             if "id" not in ad:
                 log.info(f"\tNew ad ID: {add_id}")
-                ad["date_published"] = datetime.utcnow()
+                ad["date_published"] = datetime.utcnow().isoformat()
 
             ad["id"] = add_id
-            ad["date_updated"] = datetime.utcnow()
+            ad["date_updated"] = datetime.utcnow().isoformat()
         except:
             pass
 
@@ -419,7 +420,7 @@ if __name__ == '__main__':
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
-            dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
+            dtLastUpdated = datetime.fromisoformat(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
         dtDiff = dtNow - dtLastUpdated
@@ -451,4 +452,5 @@ if __name__ == '__main__':
 
         profile_write(sProfile, config)
 
+    driver.close()
     log.info("Script done")
