@@ -16,7 +16,7 @@
       "price_type": "NEGOTIABLE",
       "caturl": "",
       "shipping_type": "PICKUP",
-      "photofiles": [ "file1.jpg", "file2.jpg" ]
+      "photo_files_path": "folder_name/or/sub_subdirectory/with/images"
     },
     { "title": "Example 2",
       "desc": "... with a fixed price (10 EUR) and no photos defined.",
@@ -24,8 +24,7 @@
       "price": "10",
       "shipping_type": "SHIPPING",
       "price_type": "FIXED",
-      "caturl": "",
-      "photofiles": []
+      "caturl": ""
     }
   ]
 }
