@@ -2,12 +2,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301
 # pylint: disable=C0111
-import os
-import sys
-import time
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException
 
 driver = webdriver.Firefox()
 driver.get("https://www.wikipedia.org")
