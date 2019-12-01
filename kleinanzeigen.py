@@ -265,10 +265,10 @@ def post_ad(driver, ad, interactive):
     # Upload images
     try:
         fileup = driver.find_element_by_xpath("//input[@type='file']")
-        path = ad["photo_files_path"]
+        path = ad["photo_dir"]
         path_abs = config["glob_photo_path"] + path
         for filename in os.listdir(path_abs):
-            file_path_abs = path_abs + '/' + filename
+            file_path_abs = path_abs + filename
             uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
             log.debug("\tUploading image: %s" % file_path_abs)
             fileup.send_keys(os.path.abspath(file_path_abs))
