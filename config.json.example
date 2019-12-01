@@ -24,7 +24,7 @@
       "price": "10",
       "shipping_type": "SHIPPING",
       "price_type": "FIXED",
-      "caturl": ""
+      "caturl": "",
       "photo_dir": "folder_name/or/subdirectory/with/images/"
     }
   ]
