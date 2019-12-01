@@ -8,8 +8,8 @@
 
 ## Features
 
-- **New** Now really uploads multiple photos by setting folder containing ad images
-- **New** Set shipping type in ad config
+- **New** Upload all images from a set subdirectory
+- **New** Configure shipping type in ad config
 - **New** Automatically deletes and re-publishes ad if existing one is too old
 - **New** Keeps track of ad publishing and last updating date
 - **New** Ability to selectively enable / disable ads being published / updated
