@@ -262,7 +262,25 @@ def post_ad(driver, ad, interactive):
         text_area.send_keys(config["glob_street"])
         fake_wait()
 
-    # Upload images
+    # Upload images from photofiles
+    try:
+        fileup = driver.find_element_by_xpath("//input[@type='file']")
+        for path in ad["photofiles"]:
+            path_abs = config["glob_photo_path"] + path
+            uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+            log.debug("\tUploading image: %s" % path_abs)
+            fileup.send_keys(os.path.abspath(path_abs))
+            total_upload_time = 0
+            while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                    total_upload_time < 30:
+                fake_wait()
+                total_upload_time += 0.5
+
+            log.debug("\tUploaded file in %s seconds" % total_upload_time)
+    except NoSuchElementException:
+        pass
+
+    # Upload images from directory
     try:
         fileup = driver.find_element_by_xpath("//input[@type='file']")
         path = ad["photo_dir"]
