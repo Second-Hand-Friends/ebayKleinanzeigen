@@ -263,42 +263,44 @@ def post_ad(driver, ad, interactive):
         fake_wait()
 
     # Upload images from photofiles
-    try:
-        fileup = driver.find_element_by_xpath("//input[@type='file']")
-        for path in ad["photofiles"]:
-            path_abs = config["glob_photo_path"] + path
-            uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
-            log.debug("\tUploading image: %s" % path_abs)
-            fileup.send_keys(os.path.abspath(path_abs))
-            total_upload_time = 0
-            while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
-                    total_upload_time < 30:
-                fake_wait()
-                total_upload_time += 0.5
+    if "photofiles" in ad:
+        try:
+            fileup = driver.find_element_by_xpath("//input[@type='file']")
+            for path in ad["photofiles"]:
+                path_abs = config["glob_photo_path"] + path
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                log.debug("\tUploading image: %s" % path_abs)
+                fileup.send_keys(os.path.abspath(path_abs))
+                total_upload_time = 0
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                        total_upload_time < 30:
+                    fake_wait()
+                    total_upload_time += 0.5
 
-            log.debug("\tUploaded file in %s seconds" % total_upload_time)
-    except NoSuchElementException:
-        pass
+                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+        except NoSuchElementException:
+            pass
 
     # Upload images from directory
-    try:
-        fileup = driver.find_element_by_xpath("//input[@type='file']")
-        path = ad["photo_dir"]
-        path_abs = config["glob_photo_path"] + path
-        for filename in os.listdir(path_abs):
-            file_path_abs = path_abs + filename
-            uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
-            log.debug("\tUploading image: %s" % file_path_abs)
-            fileup.send_keys(os.path.abspath(file_path_abs))
-            total_upload_time = 0
-            while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
-                    total_upload_time < 30:
-                fake_wait()
-                total_upload_time += 0.5
+    if "photo_dir" in ad:
+        try:
+            fileup = driver.find_element_by_xpath("//input[@type='file']")
+            path = ad["photo_dir"]
+            path_abs = config["glob_photo_path"] + path
+            for filename in os.listdir(path_abs):
+                file_path_abs = path_abs + filename
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                log.debug("\tUploading image: %s" % file_path_abs)
+                fileup.send_keys(os.path.abspath(file_path_abs))
+                total_upload_time = 0
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                        total_upload_time < 30:
+                    fake_wait()
+                    total_upload_time += 0.5
 
-            log.debug("\tUploaded file in %s seconds" % total_upload_time)
-    except NoSuchElementException:
-        pass
+                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+        except NoSuchElementException:
+            pass
 
     fake_wait()
 
