@@ -15,6 +15,7 @@ import os
 import signal
 import sys
 import time
+import urllib.parse
 from random import randint
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -22,7 +23,7 @@ from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
-import dateutil.parser
+from selenium.webdriver.support.ui import Select
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -219,8 +220,22 @@ def post_ad(driver, ad, interactive):
 
     fake_wait()
 
+    if (ad['shipping_type']) != 'NONE':
+        try:
+            select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
+            shippment_select = Select(select_element)
+            log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
+            if (ad['shipping_type']) == 'PICKUP':
+                shippment_select.select_by_visible_text("Nur Abholung")
+            if (ad['shipping_type']) == 'SHIPPING':
+                shippment_select.select_by_visible_text("Versand möglich")
+            fake_wait()
+        except NoSuchElementException:
+            pass
+
     text_area = driver.find_element_by_id('pstad-price')
-    text_area.send_keys(ad["price"])
+    if ad["price_type"] != 'GIVE_AWAY':
+        text_area.send_keys(ad["price"])
     price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
     price.click()
     fake_wait()
@@ -247,23 +262,45 @@ def post_ad(driver, ad, interactive):
         text_area.send_keys(config["glob_street"])
         fake_wait()
 
-    # Upload images
-    try:
-        fileup = driver.find_element_by_xpath("//input[@type='file']")
-        for path in ad["photofiles"]:
-            path_abs = config["glob_photo_path"] + path
-            uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
-            log.debug("\tUploading image: %s" % path_abs)
-            fileup.send_keys(os.path.abspath(path_abs))
-            total_upload_time = 0
-            while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
-                    total_upload_time < 30:
-                fake_wait()
-                total_upload_time += 0.5
+    # Upload images from photofiles
+    if "photofiles" in ad:
+        try:
+            fileup = driver.find_element_by_xpath("//input[@type='file']")
+            for path in ad["photofiles"]:
+                path_abs = config["glob_photo_path"] + path
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                log.debug("\tUploading image: %s" % path_abs)
+                fileup.send_keys(os.path.abspath(path_abs))
+                total_upload_time = 0
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                        total_upload_time < 30:
+                    fake_wait()
+                    total_upload_time += 0.5
 
-            log.debug("\tUploaded file in %s seconds" % total_upload_time)
-    except NoSuchElementException:
-        pass
+                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+        except NoSuchElementException:
+            pass
+
+    # Upload images from directory
+    if "photo_dir" in ad:
+        try:
+            fileup = driver.find_element_by_xpath("//input[@type='file']")
+            path = ad["photo_dir"]
+            path_abs = config["glob_photo_path"] + path
+            for filename in os.listdir(path_abs):
+                file_path_abs = path_abs + filename
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                log.debug("\tUploading image: %s" % file_path_abs)
+                fileup.send_keys(os.path.abspath(file_path_abs))
+                total_upload_time = 0
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                        total_upload_time < 30:
+                    fake_wait()
+                    total_upload_time += 0.5
+
+                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+        except NoSuchElementException:
+            pass
 
     fake_wait()
 
@@ -297,10 +334,10 @@ def post_ad(driver, ad, interactive):
             log.info(f"\tPosted as: {driver.current_url}")
             if "id" not in ad:
                 log.info(f"\tNew ad ID: {add_id}")
-                ad["date_published"] = datetime.utcnow()
+                ad["date_published"] = datetime.utcnow().isoformat()
 
             ad["id"] = add_id
-            ad["date_updated"] = datetime.utcnow()
+            ad["date_updated"] = datetime.utcnow().isoformat()
         except:
             pass
 
@@ -410,7 +447,7 @@ if __name__ == '__main__':
         driver = session_create(config)
         profile_write(sProfile, config)
         login(config)
-        fake_wait(randint(12222, 17777))        
+        fake_wait(randint(12222, 17777))
 
     for ad in config["ads"]:
 
@@ -419,7 +456,7 @@ if __name__ == '__main__':
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
-            dtLastUpdated = dateutil.parser.parse(ad["date_updated"])
+            dtLastUpdated = datetime.fromisoformat(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
         dtDiff = dtNow - dtLastUpdated
@@ -451,4 +488,5 @@ if __name__ == '__main__':
 
         profile_write(sProfile, config)
 
+    driver.close()
     log.info("Script done")
