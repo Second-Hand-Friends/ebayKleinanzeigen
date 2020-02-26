@@ -110,7 +110,7 @@ def delete_ad(driver, ad):
             btn_confirm_del.click()
 
             log.info("\tAd deleted")
-            fake_wait(2000, 3000)
+            fake_wait(randint(2000, 3000))
             webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
             return True
 
