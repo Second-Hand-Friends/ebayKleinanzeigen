@@ -18,8 +18,11 @@ import time
 import urllib.parse
 from random import randint
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
@@ -56,9 +59,11 @@ def login(config):
     input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
-    fake_wait(randint(300, 1500))
 
-    text_area = driver.find_element_by_id('login-email')
+    WebDriverWait(driver, 6).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
+
+    text_area = WebDriverWait(driver, 1)\
+        .until(EC.presence_of_element_located((By.ID, 'login-email')))
     text_area.send_keys(input_email)
     fake_wait(200)
 
