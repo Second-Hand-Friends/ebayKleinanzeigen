@@ -367,45 +367,9 @@ def session_create(config):
     if config.get('headless', False) is True:
         log.info("Headless mode")
         options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_options=options)
+    driver = webdriver.Firefox(options=options)
 
     log.info("New session is: %s %s" % (driver.session_id, driver.command_executor._url))
-
-    config['session_id'] = driver.session_id
-    config['session_url'] = driver.command_executor._url
-
-    return driver
-
-
-def session_attach(config):
-    log.info("Trying to attach to session %s %s" % (config['session_id'], config['session_url']))
-
-    # Save the original function, so we can revert our patch
-    org_command_execute = webdriver.Remote.execute
-
-    def new_command_execute(self, command, params=None):
-        if command == "newSession":
-            # Mock the response
-            return {'success': 0, 'value': None, 'sessionId': config['session_id']}
-        else:
-            return org_command_execute(self, command, params)
-
-    # Patch the function before creating the driver object
-    webdriver.Remote.execute = new_command_execute
-
-    driver = webdriver.Remote(command_executor=config['session_url'], desired_capabilities={})
-    driver.session_id = config['session_id']
-
-    try:
-        log.info("Current URL is: %s" % driver.current_url)
-    except:
-        log.info("Session does not exist anymore")
-        config['session_id'] = None
-        config['session_url'] = None
-        driver = None
-
-        # Make sure to put the original executor back in charge.
-        webdriver.Remote.execute = org_command_execute
 
     return driver
 
@@ -451,16 +415,10 @@ if __name__ == '__main__':
 
     dtNow = datetime.utcnow()
 
-    driver = None
-
-    if config.get('session_id') is not None:
-        driver = session_attach(config)
-
-    if driver is None:
-        driver = session_create(config)
-        profile_write(sProfile, config)
-        login(config)
-        fake_wait(randint(1000, 4000))
+    driver = session_create(config)
+    profile_write(sProfile, config)
+    login(config)
+    fake_wait(randint(1000, 4000))
 
     for ad in config["ads"]:
 
