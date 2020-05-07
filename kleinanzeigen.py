@@ -62,8 +62,7 @@ def login(config):
 
     WebDriverWait(driver, 6).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
 
-    text_area = WebDriverWait(driver, 1)\
-        .until(EC.presence_of_element_located((By.ID, 'login-email')))
+    text_area = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'login-email')))
     text_area.send_keys(input_email)
     fake_wait(200)
 
@@ -195,14 +194,19 @@ def post_ad(driver, ad, interactive):
         ad["price_type"] = 'NEGOTIABLE'
 
     # Navigate to page
-    driver.get(ad["caturl"])
+    driver.get('https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben.html')
     fake_wait(randint(2000, 3500))
 
-    # Select category
-    submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
-
-    submit_button.click()
-    fake_wait(randint(1000, 3000))
+    category_selected = False
+    try:
+      driver.find_element_by_id('pstad-lnk-chngeCtgry')
+    except:
+      # legacy handling for old page layout where you have to first select the category (currently old and new layout are served randomly)
+      driver.get(ad["caturl"].replace('p-kategorie-aendern', 'p-anzeige-aufgeben'))
+      fake_wait(300)
+      driver.find_element_by_css_selector("#postad-step1-sbmt button").click()
+      fake_wait(300)
+      category_selected = True
 
     # Check if posting an ad is allowed / possible
     fRc = post_ad_is_allowed(driver)
@@ -210,9 +214,30 @@ def post_ad(driver, ad, interactive):
         return fRc
 
     # Fill form
-    text_area = driver.find_element_by_id('postad-title')
-    text_area.send_keys(ad["title"])
-    fake_wait()
+    title_input = driver.find_element_by_id('postad-title')
+    title_input.click()
+    title_input.send_keys(ad["title"])
+    driver.find_element_by_id('pstad-descrptn').click() # click description textarea to lose focus from title field which will trigger category auto detection
+    if not category_selected:
+      # wait for category auto detection
+      try:
+        WebDriverWait(driver, 3).until(lambda driver: driver.find_element_by_id('postad-category-path').text.strip() != '')
+        category_selected = True
+      except:
+        pass
+      # Change category if present in config (otherwise keep auto detected category from eBay Kleinanzeigen)
+      cat_override = ad["caturl"]
+      if cat_override:
+        cat_override = cat_override.replace('p-anzeige-aufgeben', 'p-kategorie-aendern') # replace old links for backwards compatibility
+        driver.find_element_by_id('pstad-lnk-chngeCtgry').click()
+        WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'postad-step1-sbmt')))
+        driver.get(cat_override)
+        fake_wait()
+        driver.find_element_by_id('postad-step1-sbmt').submit()
+        fake_wait()
+        category_selected = True
+      if not category_selected:
+        raise Exception('No category configured for this ad and auto detection failed, cannot publish')
 
     text_area = driver.find_element_by_id('pstad-descrptn')
     desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
@@ -281,7 +306,7 @@ def post_ad(driver, ad, interactive):
                     total_upload_time += 0.5
 
                 if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
-                    log.warning("\Could not upload image: %s within %s seconds" % (path_abs, total_upload_time))
+                    log.warning("\tCould not upload image: %s within %s seconds" % (path_abs, total_upload_time))
                 else:
                     log.debug("\tUploaded file in %s seconds" % total_upload_time)
         except NoSuchElementException:
@@ -309,7 +334,7 @@ def post_ad(driver, ad, interactive):
                     total_upload_time += 0.5
                 
                 if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
-                    log.warning("\Could not upload image: %s within %s seconds" % (file_path_abs, total_upload_time))
+                    log.warning("\tCould not upload image: %s within %s seconds" % (file_path_abs, total_upload_time))
                 else:
                     log.debug("\tUploaded file in %s seconds" % total_upload_time)
         except NoSuchElementException:
