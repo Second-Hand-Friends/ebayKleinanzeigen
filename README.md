@@ -13,6 +13,6 @@
 - Automatically deletes and re-publishes ad if existing one is too old
 - Keeps track of ad publishing and last updating date
 - Ability to selectively enable / disable ads being published / updated
-- Selects category and fills the form data
+- Overrides auto detected category (if `caturl` is specified) and fills the form data
 - Uploads multiple photos
 

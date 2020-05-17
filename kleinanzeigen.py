@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # pylint: disable=C0301
 # pylint: disable=C0111
@@ -18,8 +18,11 @@ import time
 import urllib.parse
 from random import randint
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 import logging
 from datetime import datetime
@@ -56,15 +59,16 @@ def login(config):
     input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
-    fake_wait()
 
-    text_area = driver.find_element_by_id('login-email')
+    WebDriverWait(driver, 6).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
+
+    text_area = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'login-email')))
     text_area.send_keys(input_email)
-    fake_wait()
+    fake_wait(200)
 
     text_area = driver.find_element_by_id('login-password')
     text_area.send_keys(input_pw)
-    fake_wait()
+    fake_wait(200)
 
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
@@ -72,7 +76,7 @@ def login(config):
 
 def fake_wait(ms_sleep=None):
     if ms_sleep is None:
-        ms_sleep = randint(777, 3333)
+        ms_sleep = randint(600, 2000)
     if ms_sleep < 100:
         ms_sleep = 100
     log.debug("Waiting %d ms ..." % ms_sleep)
@@ -85,22 +89,17 @@ def delete_ad(driver, ad):
     driver.get("https://www.ebay-kleinanzeigen.de/m-meine-anzeigen.html")
     fake_wait()
 
-    fFound = False
     ad_id_elem = None
 
     if "id" in ad:
-        log.info("\tSearching by ID")
         try:
             ad_id_elem = driver.find_element_by_xpath("//a[@data-adid='%s']" % ad["id"])
         except NoSuchElementException as e:
             log.info("\tNot found by ID")
 
-    if not fFound:
-        log.info("\tSearching by title")
+    if ad_id_elem is None:
         try:
             ad_id_elem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
-            ad_id = ad_id_elem.get_attribute("data-adid")
-            log.info("\tAd ID is %s" % ad_id)
         except NoSuchElementException as e:
             log.info("\tNot found by title")
 
@@ -115,6 +114,9 @@ def delete_ad(driver, ad):
             btn_confirm_del.click()
 
             log.info("\tAd deleted")
+            fake_wait(randint(2000, 3000))
+            webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+            return True
 
         except NoSuchElementException as e:
             log.info("\tDelete button not found")
@@ -122,6 +124,7 @@ def delete_ad(driver, ad):
         log.info("\tAd does not exist (anymore)")
 
     ad.pop("id", None)
+    return False
 
 
 # From: https://stackoverflow.com/questions/983354/how-do-i-make-python-to-wait-for-a-pressed-key
@@ -129,8 +132,7 @@ def wait_key():
     """ Wait for a key press on the console and return it. """
     result = None
     if os.name == 'nt':
-        import msvcrt
-        result = msvcrt.getch()
+        result = input("Press Enter to continue...")
     else:
         import termios
         fd = sys.stdin.fileno()
@@ -192,14 +194,19 @@ def post_ad(driver, ad, interactive):
         ad["price_type"] = 'NEGOTIABLE'
 
     # Navigate to page
-    driver.get(ad["caturl"])
-    fake_wait(randint(4000, 8000))
+    driver.get('https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben.html')
+    fake_wait(randint(2000, 3500))
 
-    # Select category
-    submit_button = driver.find_element_by_css_selector("#postad-step1-sbmt button")
-
-    submit_button.click()
-    fake_wait(randint(4000, 8000))
+    category_selected = False
+    try:
+      driver.find_element_by_id('pstad-lnk-chngeCtgry')
+    except:
+      # legacy handling for old page layout where you have to first select the category (currently old and new layout are served randomly)
+      driver.get(ad["caturl"].replace('p-kategorie-aendern', 'p-anzeige-aufgeben'))
+      fake_wait(300)
+      driver.find_element_by_css_selector("#postad-step1-sbmt button").click()
+      fake_wait(300)
+      category_selected = True
 
     # Check if posting an ad is allowed / possible
     fRc = post_ad_is_allowed(driver)
@@ -207,9 +214,30 @@ def post_ad(driver, ad, interactive):
         return fRc
 
     # Fill form
-    text_area = driver.find_element_by_id('postad-title')
-    text_area.send_keys(ad["title"])
-    fake_wait()
+    title_input = driver.find_element_by_id('postad-title')
+    title_input.click()
+    title_input.send_keys(ad["title"])
+    driver.find_element_by_id('pstad-descrptn').click() # click description textarea to lose focus from title field which will trigger category auto detection
+    if not category_selected:
+      # wait for category auto detection
+      try:
+        WebDriverWait(driver, 3).until(lambda driver: driver.find_element_by_id('postad-category-path').text.strip() != '')
+        category_selected = True
+      except:
+        pass
+      # Change category if present in config (otherwise keep auto detected category from eBay Kleinanzeigen)
+      cat_override = ad["caturl"]
+      if cat_override:
+        cat_override = cat_override.replace('p-anzeige-aufgeben', 'p-kategorie-aendern') # replace old links for backwards compatibility
+        driver.find_element_by_id('pstad-lnk-chngeCtgry').click()
+        WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.ID, 'postad-step1-sbmt')))
+        driver.get(cat_override)
+        fake_wait()
+        driver.find_element_by_id('postad-step1-sbmt').submit()
+        fake_wait()
+        category_selected = True
+      if not category_selected:
+        raise Exception('No category configured for this ad and auto detection failed, cannot publish')
 
     text_area = driver.find_element_by_id('pstad-descrptn')
     desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
@@ -274,10 +302,13 @@ def post_ad(driver, ad, interactive):
                 total_upload_time = 0
                 while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
                         total_upload_time < 30:
-                    fake_wait()
+                    fake_wait(500)
                     total_upload_time += 0.5
 
-                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
+                    log.warning("\tCould not upload image: %s within %s seconds" % (path_abs, total_upload_time))
+                else:
+                    log.debug("\tUploaded file in %s seconds" % total_upload_time)
         except NoSuchElementException:
             pass
 
@@ -287,7 +318,11 @@ def post_ad(driver, ad, interactive):
             fileup = driver.find_element_by_xpath("//input[@type='file']")
             path = ad["photo_dir"]
             path_abs = config["glob_photo_path"] + path
+            if not path_abs.endswith("/"):
+                path_abs += "/"
             for filename in os.listdir(path_abs):
+                if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
+                    continue
                 file_path_abs = path_abs + filename
                 uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
                 log.debug("\tUploading image: %s" % file_path_abs)
@@ -295,10 +330,13 @@ def post_ad(driver, ad, interactive):
                 total_upload_time = 0
                 while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
                         total_upload_time < 30:
-                    fake_wait()
+                    fake_wait(500)
                     total_upload_time += 0.5
-
-                log.debug("\tUploaded file in %s seconds" % total_upload_time)
+                
+                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
+                    log.warning("\tCould not upload image: %s within %s seconds" % (file_path_abs, total_upload_time))
+                else:
+                    log.debug("\tUploaded file in %s seconds" % total_upload_time)
         except NoSuchElementException:
             pass
 
@@ -354,45 +392,9 @@ def session_create(config):
     if config.get('headless', False) is True:
         log.info("Headless mode")
         options.add_argument("--headless")
-    driver = webdriver.Firefox(firefox_options=options)
+    driver = webdriver.Firefox(options=options)
 
     log.info("New session is: %s %s" % (driver.session_id, driver.command_executor._url))
-
-    config['session_id'] = driver.session_id
-    config['session_url'] = driver.command_executor._url
-
-    return driver
-
-
-def session_attach(config):
-    log.info("Trying to attach to session %s %s" % (config['session_id'], config['session_url']))
-
-    # Save the original function, so we can revert our patch
-    org_command_execute = webdriver.Remote.execute
-
-    def new_command_execute(self, command, params=None):
-        if command == "newSession":
-            # Mock the response
-            return {'success': 0, 'value': None, 'sessionId': config['session_id']}
-        else:
-            return org_command_execute(self, command, params)
-
-    # Patch the function before creating the driver object
-    webdriver.Remote.execute = new_command_execute
-
-    driver = webdriver.Remote(command_executor=config['session_url'], desired_capabilities={})
-    driver.session_id = config['session_id']
-
-    try:
-        log.info("Current URL is: %s" % driver.current_url)
-    except:
-        log.info("Session does not exist anymore")
-        config['session_id'] = None
-        config['session_url'] = None
-        driver = None
-
-        # Make sure to put the original executor back in charge.
-        webdriver.Remote.execute = org_command_execute
 
     return driver
 
@@ -438,16 +440,10 @@ if __name__ == '__main__':
 
     dtNow = datetime.utcnow()
 
-    driver = None
-
-    if config.get('session_id') is not None:
-        driver = session_attach(config)
-
-    if driver is None:
-        driver = session_create(config)
-        profile_write(sProfile, config)
-        login(config)
-        fake_wait(randint(12222, 17777))
+    driver = session_create(config)
+    profile_write(sProfile, config)
+    login(config)
+    fake_wait(randint(1000, 4000))
 
     for ad in config["ads"]:
 
@@ -473,18 +469,16 @@ if __name__ == '__main__':
         else:
             log.info("\tDisabled, skipping")
 
-        if fNeedsUpdate \
-                or fForceUpdate:
+        if fNeedsUpdate or fForceUpdate:
 
             delete_ad(driver, ad)
-            fake_wait(randint(12222, 17777))
 
             fPosted = post_ad(driver, ad, True)
             if not fPosted:
                 break
 
             log.info("Waiting for handling next ad ...")
-            fake_wait(randint(12222, 17777))
+            fake_wait(randint(2000, 6000))
 
         profile_write(sProfile, config)
 
