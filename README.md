@@ -6,6 +6,16 @@
 * geckodriver (to /usr/local/bin): https://github.com/mozilla/geckodriver/releases
 * selenium: ```pip install selenium```
 
+## Features
+
+- **New** Upload all images from a set subdirectory
+- **New** Configure shipping type in ad config
+- Automatically deletes and re-publishes ad if existing one is too old
+- Keeps track of ad publishing and last updating date
+- Ability to selectively enable / disable ads being published / updated
+- Overrides auto detected category (if `caturl` is specified) and fills the form data
+- Uploads multiple photos
+
 ## Installation guide (Ubuntu)
 
 1. Install Python 3 and PIP
@@ -53,16 +63,6 @@
     `python3 kleinanzeigen.py --profile config.json`
 
 Now a browser window should start, login and fill the fields automatically. 
-
-## Features
-
-- **New** Upload all images from a set subdirectory
-- **New** Configure shipping type in ad config
-- Automatically deletes and re-publishes ad if existing one is too old
-- Keeps track of ad publishing and last updating date
-- Ability to selectively enable / disable ads being published / updated
-- Overrides auto detected category (if `caturl` is specified) and fills the form data
-- Uploads multiple photos
 
 ## Credits
 - @Lopp0 - initial script
