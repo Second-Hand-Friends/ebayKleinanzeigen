@@ -8,6 +8,7 @@
   "glob_photo_path": "/path/to/photos/",
   "glob_ad_prefix": "Text to add which comes before the actual ad description.\nLeave free if not needed\n",
   "glob_ad_suffix": "Text to add which comes after the actual ad description.\nLeave free if not needed\n",
+  "webdriver_enabled": false,
   "ads": [
     { "title": "Example 1",
       "desc": "... with a negotiable price (5 EUR) and some photos.",

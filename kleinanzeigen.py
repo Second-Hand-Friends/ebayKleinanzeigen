@@ -392,6 +392,10 @@ def session_create(config):
     if config.get('headless', False) is True:
         log.info("Headless mode")
         options.add_argument("--headless")
+
+    if config.get('webdriver_enabled') is False:
+        options.set_preference("dom.webdriver.enabled", False)
+    
     driver = webdriver.Firefox(options=options)
 
     log.info("New session is: %s %s" % (driver.session_id, driver.command_executor._url))
