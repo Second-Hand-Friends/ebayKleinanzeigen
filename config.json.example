@@ -22,7 +22,7 @@
       "zip" : "33333"
     },
     { "title": "Example 2",
-      "description_file" : "/absapath/to/file.txt"
+      "description_file" : "/abspath/to/file.txt"
       "enabled": "1",
       "price": "10",
       "shipping_type": "SHIPPING",
