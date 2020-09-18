@@ -18,7 +18,8 @@
       "price_type": "NEGOTIABLE",
       "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=210/223/sonstige_autoteile&isParent=false",
       "shipping_type": "PICKUP",
-      "photofiles": [ "file1.jpg", "file2.jpg" ]
+      "photofiles": [ "file1.jpg", "file2.jpg" ],
+      "zip" : "33333"
     },
     { "title": "Example 2",
       "description_file" : "/absapath/to/file.txt"

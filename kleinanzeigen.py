@@ -283,6 +283,9 @@ def post_ad(driver, ad, interactive):
 
     text_area = driver.find_element_by_id('pstad-zip')
     text_area.clear()
+    if ad.get("zip", None) is not None:
+        text_area.send_keys(ad["zip"])
+    else:
     text_area.send_keys(config["glob_zip"])
     fake_wait()
 
