@@ -28,8 +28,6 @@
 
 3. Install Gecko Driver and move it to /usr/bin
 
-- just run `brew install geckodriver`. Tested on catalina.
-
 - Check the [release Page](https://github.com/mozilla/geckodriver/releases) of Mozilla and replace #RELEASE# with the current release number, e.g. v0.26.0
 
     `wget https://github.com/mozilla/geckodriver/releases/download/#RELEASE#/geckodriver-#RELEASE#-linux64.tar.gz`
