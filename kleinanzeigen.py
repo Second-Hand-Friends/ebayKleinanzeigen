@@ -452,6 +452,9 @@ if __name__ == '__main__':
 
     profile_read(sProfile, config)
 
+    if config.get("headless") is None:
+        config["headless"] = False
+
     updateInterval = config.get("update_interval", 4)
 
     fForceUpdate = False
