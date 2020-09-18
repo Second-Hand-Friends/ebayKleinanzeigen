@@ -16,7 +16,7 @@
 - Overrides auto detected category (if `caturl` is specified) and fills the form data
 - Uploads multiple photos
 
-## Installation guide (Ubuntu)
+## Installation Guide (Ubuntu)
 
 1. Install Python 3 and PIP
 
@@ -27,6 +27,8 @@
     `pip3 install selenium`
 
 3. Install Gecko Driver and move it to /usr/bin
+
+- just run `brew install geckodriver`. Tested on catalina.
 
 - Check the [release Page](https://github.com/mozilla/geckodriver/releases) of Mozilla and replace #RELEASE# with the current release number, e.g. v0.26.0
 
@@ -61,6 +63,33 @@
 - got to the app folder
 
     `python3 kleinanzeigen.py --profile config.json`
+
+Now a browser window should start, login and fill the fields automatically. 
+
+
+
+## Installation Guide (MacOS, Tested on catalina)
+
+```bash
+# create new virtual env, for instance with conda
+conda create --name ebayKleinanzeigen python=3.7
+conda activate ebayKleinanzeigen
+pip install selenium
+brew install geckodriver
+
+# if firefox is not installed yet
+brew cask install firefox
+
+git clone https://github.com/donwayo/ebayKleinanzeigen
+
+# open config and enter your preferences. For cat_url, see below
+cp config.json.example config.json
+```
+
+- To run the app, run `python kleinanzeigen.py --profile config.json`
+
+- to find out the categories you need to start posting an ad on the website and then copy the corresponding link to the category from there. It's the screen where you select the category. 
+
 
 Now a browser window should start, login and fill the fields automatically. 
 
