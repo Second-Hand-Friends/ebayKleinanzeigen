@@ -436,8 +436,7 @@ if __name__ == '__main__':
 
     profile_read(sProfile, config)
 
-    if config.get('headless') is None:
-        config['headless'] = False
+    updateInterval = config.get("update_interval", 4)
 
     fForceUpdate = False
     fDoLogin = True
@@ -465,7 +464,7 @@ if __name__ == '__main__':
                 and ad["enabled"] == "1":
             if "date_published" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
-                if dtDiff.days > 4:
+                if dtDiff.days > updateInterval:
                     fNeedsUpdate = True
             else:
                 log.info("\tNot published yet")
