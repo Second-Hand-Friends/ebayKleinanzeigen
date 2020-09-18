@@ -286,7 +286,7 @@ def post_ad(driver, ad, interactive):
     if ad.get("zip", None) is not None:
         text_area.send_keys(ad["zip"])
     else:
-    text_area.send_keys(config["glob_zip"])
+        text_area.send_keys(config["glob_zip"])
     fake_wait()
 
     if config["glob_phone_number"]:
