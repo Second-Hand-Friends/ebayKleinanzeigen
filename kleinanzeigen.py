@@ -239,10 +239,23 @@ def post_ad(driver, ad, interactive):
       if not category_selected:
         raise Exception('No category configured for this ad and auto detection failed, cannot publish')
 
-    text_area = driver.find_element_by_id('pstad-descrptn')
-    desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
-    desc_list = [x.strip('\\n') for x in desc.split('\\n')]
-    for p in desc_list:
+    text_area = driver.find_element_by_id("pstad-descrptn")
+    ad_suffix = config.get("glob_ad_suffix", "")
+    ad_prefix = config.get("glob_ad_prefix", "")
+
+    if ad.get("description_file", None) is not None:
+        description_file = ad.get("description_file")
+        with open(description_file, "r") as f:
+            description_lines = f.readlines()
+    else:
+        desc = ad.get("desc")
+        description_lines = desc.split("\\n")
+
+    description_lines = [x.strip("\\n") for x in description_lines]
+    description_lines.append(ad_suffix)
+    description_lines.insert(0, ad_prefix)
+
+    for p in description_lines:
         text_area.send_keys(p)
         text_area.send_keys(Keys.RETURN)
 
