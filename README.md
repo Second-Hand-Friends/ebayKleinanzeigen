@@ -99,3 +99,4 @@ Now a browser window should start, login and fill the fields automatically.
 - @x86dev - Fixes and improvements
 - @neon-dev - Fixes and improvements
 - @kahironimashte - Install guide
+- @therealsupermario - Description Files, ad-level zip codes, custom update interval
