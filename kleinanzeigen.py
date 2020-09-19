@@ -239,6 +239,18 @@ def post_ad(driver, ad, interactive):
       if not category_selected:
         raise Exception('No category configured for this ad and auto detection failed, cannot publish')
 
+    # add additional category fields
+    additional_category_options = ad.get("additional_category_options", {})
+    for element_id, value in additional_category_options.items():
+        try:
+            select_element = driver.find_element_by_css_selector(
+                'select[id$="{}"]'.format(element_id)
+            )
+            Select(select_element).select_by_visible_text(value)
+        except NoSuchElementException:
+            pass
+
+
     text_area = driver.find_element_by_id("pstad-descrptn")
     ad_suffix = config.get("glob_ad_suffix", "")
     ad_prefix = config.get("glob_ad_prefix", "")

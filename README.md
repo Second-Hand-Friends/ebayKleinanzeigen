@@ -91,6 +91,16 @@ cp config.json.example config.json
 
 Now a browser window should start, login and fill the fields automatically. 
 
+## Additional Category fields:
+
+|   |   | |
+|---|---| ---|
+| Elektronik > Foto  | `foto.art_s`         | `Kamera`, `Objektiv`, `Zubehör`, `Kamera & Zubehör` |
+| Elektronik > Foto  | `foto.condition_s`   | `Neu`, `Gebraucht`, `Defekt`          |
+
+
+
+
 ## Credits
 - @Lopp0 - initial script
 - @donwayo - Fixes and improvements
@@ -99,4 +109,4 @@ Now a browser window should start, login and fill the fields automatically.
 - @x86dev - Fixes and improvements
 - @neon-dev - Fixes and improvements
 - @kahironimashte - Install guide
-- @therealsupermario - Description Files, ad-level zip codes, custom update interval
+- @therealsupermario - Description Files, ad-level zip codes, custom update interval, support for additional category fields
