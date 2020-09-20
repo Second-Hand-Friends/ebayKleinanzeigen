@@ -27,8 +27,12 @@
       "price": "10",
       "shipping_type": "SHIPPING",
       "price_type": "FIXED",
-      "caturl": "",
-      "photo_dir": "folder_name/or/subdirectory/with/images/"
+      "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=161/245/other/null/",
+      "photo_dir": "folder_name/or/subdirectory/with/images/",
+      "additional_category_options": {
+          "foto.art_s": "Zubehör",
+          "foto.condition_s": "Gebraucht"
+      }
     },
   ]
 }
