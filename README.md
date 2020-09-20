@@ -16,7 +16,7 @@
 - Overrides auto detected category (if `caturl` is specified) and fills the form data
 - Uploads multiple photos
 
-## Installation guide (Ubuntu)
+## Installation Guide (Ubuntu)
 
 1. Install Python 3 and PIP
 
@@ -64,6 +64,43 @@
 
 Now a browser window should start, login and fill the fields automatically. 
 
+
+
+## Installation Guide (MacOS, Tested on catalina)
+
+```bash
+# create new virtual env, for instance with conda
+conda create --name ebayKleinanzeigen python=3.7
+conda activate ebayKleinanzeigen
+pip install selenium
+brew install geckodriver
+
+# if firefox is not installed yet
+brew cask install firefox
+
+git clone https://github.com/donwayo/ebayKleinanzeigen
+
+# open config and enter your preferences. For cat_url, see below
+cp config.json.example config.json
+```
+
+- To run the app, run `python kleinanzeigen.py --profile config.json`
+
+- to find out the categories you need to start posting an ad on the website and then copy the corresponding link to the category from there. It's the screen where you select the category. 
+
+
+Now a browser window should start, login and fill the fields automatically. 
+
+## Additional Category fields:
+
+|   |   | |
+|---|---| ---|
+| Elektronik > Foto  | `foto.art_s`         | `Kamera`, `Objektiv`, `Zubehör`, `Kamera & Zubehör` |
+| Elektronik > Foto  | `foto.condition_s`   | `Neu`, `Gebraucht`, `Defekt`          |
+
+
+
+
 ## Credits
 - @Lopp0 - initial script
 - @donwayo - Fixes and improvements
@@ -72,3 +109,4 @@ Now a browser window should start, login and fill the fields automatically.
 - @x86dev - Fixes and improvements
 - @neon-dev - Fixes and improvements
 - @kahironimashte - Install guide
+- @therealsupermario - Description Files, ad-level zip codes, custom update interval, support for additional category fields

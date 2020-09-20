@@ -239,10 +239,35 @@ def post_ad(driver, ad, interactive):
       if not category_selected:
         raise Exception('No category configured for this ad and auto detection failed, cannot publish')
 
-    text_area = driver.find_element_by_id('pstad-descrptn')
-    desc = config['glob_ad_prefix'] + ad["desc"] + config['glob_ad_suffix']
-    desc_list = [x.strip('\\n') for x in desc.split('\\n')]
-    for p in desc_list:
+    # add additional category fields
+    additional_category_options = ad.get("additional_category_options", {})
+    for element_id, value in additional_category_options.items():
+        try:
+            select_element = driver.find_element_by_css_selector(
+                'select[id$="{}"]'.format(element_id)
+            )
+            Select(select_element).select_by_visible_text(value)
+        except NoSuchElementException:
+            pass
+
+
+    text_area = driver.find_element_by_id("pstad-descrptn")
+    ad_suffix = config.get("glob_ad_suffix", "")
+    ad_prefix = config.get("glob_ad_prefix", "")
+
+    if ad.get("description_file", None) is not None:
+        description_file = ad.get("description_file")
+        with open(description_file, "r") as f:
+            description_lines = f.readlines()
+    else:
+        desc = ad.get("desc")
+        description_lines = desc.split("\\n")
+
+    description_lines = [x.strip("\\n") for x in description_lines]
+    description_lines.append(ad_suffix)
+    description_lines.insert(0, ad_prefix)
+
+    for p in description_lines:
         text_area.send_keys(p)
         text_area.send_keys(Keys.RETURN)
 
@@ -270,7 +295,10 @@ def post_ad(driver, ad, interactive):
 
     text_area = driver.find_element_by_id('pstad-zip')
     text_area.clear()
-    text_area.send_keys(config["glob_zip"])
+    if ad.get("zip", None) is not None:
+        text_area.send_keys(ad["zip"])
+    else:
+        text_area.send_keys(config["glob_zip"])
     fake_wait()
 
     if config["glob_phone_number"]:
@@ -436,8 +464,10 @@ if __name__ == '__main__':
 
     profile_read(sProfile, config)
 
-    if config.get('headless') is None:
-        config['headless'] = False
+    if config.get("headless") is None:
+        config["headless"] = False
+
+    updateInterval = config.get("update_interval", 4)
 
     fForceUpdate = False
     fDoLogin = True
@@ -465,7 +495,7 @@ if __name__ == '__main__':
                 and ad["enabled"] == "1":
             if "date_published" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
-                if dtDiff.days > 4:
+                if dtDiff.days > updateInterval:
                     fNeedsUpdate = True
             else:
                 log.info("\tNot published yet")
