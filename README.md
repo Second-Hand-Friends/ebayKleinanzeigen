@@ -97,7 +97,7 @@ Now a browser window should start, login and fill the fields automatically.
 
 2. create a ebayKleinanzeigen directory somewhere you want
 
-3. move to Python script installation directory an install some requirements
+3. move to Python script installation directory and install some requirements
 
     `cd 'C:\Users\ulrik\AppData\Local\Programs\Python\Python39\Scripts`
     `pip install selenium`
