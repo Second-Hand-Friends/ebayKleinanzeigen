@@ -91,6 +91,42 @@ cp config.json.example config.json
 
 Now a browser window should start, login and fill the fields automatically. 
 
+
+## Installation Guide (Windows)
+1. Download and install Python 3 for Windows from https://www.python.org/downloads/
+
+2. create a ebayKleinanzeigen directory somewhere you want
+
+3. move to Python script installation directory an install some requirements
+
+    `cd 'C:\Users\ulrik\AppData\Local\Programs\Python\Python39\Scripts`
+    `pip install selenium`
+
+4. download and extract the Gecko Driver for windows from https://github.com/mozilla/geckodriver/releases and place it in the ebayKleinanzeigen directory
+
+5. download the ebayKleinanzeigen app from git and extract it to the ebayKleinanzeigen directory
+
+6. configure the app
+
+- go to the ebayKleinanzeigen directory
+
+- copy the sample to a new file
+
+   `cp config.json.example config.json`
+
+- edit the file and fill in your details. 
+
+- to find out the categories you need to start posting an ad on the website and then copy the corresponding link to the category from there. It's the screen where you select the category. 
+
+6. Start the app
+
+- go to the ebayKleinanzeigen directory
+
+    `python3 kleinanzeigen.py --profile config.json`
+
+Now a browser window should start, login and fill the fields automatically. 
+
+
 ## Additional Category fields:
 
 |   |   | |
