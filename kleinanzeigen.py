@@ -9,28 +9,25 @@ Updated and improved by x86dev Dec 2017.
 
 @author: Leo; Eduardo; x86dev
 """
-import json
 import getopt
+import json
+import logging
 import os
 import signal
 import sys
 import time
 import urllib.parse
+from datetime import datetime
+from platform import python_version_tuple
 from random import randint
+
 from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
-import logging
-from datetime import datetime
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
-from selenium.webdriver import DesiredCapabilities
-from platform import python_version, python_version_tuple
-
+from selenium.webdriver.support.ui import Select, WebDriverWait
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -495,6 +492,8 @@ if __name__ == '__main__':
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
+            # python < 3.7 do not support datetime.datetime_fromisoformat()
+            # https://stackoverflow.com/a/60852111/256002
             if int(python_version_tuple()[1]) < 7:
                 from backports.datetime_fromisoformat import MonkeyPatch
                 MonkeyPatch.patch_fromisoformat()
