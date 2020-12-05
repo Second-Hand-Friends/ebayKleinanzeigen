@@ -161,4 +161,4 @@ Now a browser window should start, login and fill the fields automatically.
 
 * @therealsupermario - Description Files, ad-level zip codes, custom update interval, support for additional category fields
 
-* @denisergashbaev - fixes, README.md formatting and running from VS Code
+* @denisergashbaev - python 3.6 fixes, README.md, running from VS Code

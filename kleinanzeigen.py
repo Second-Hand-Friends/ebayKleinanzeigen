@@ -29,6 +29,7 @@ from datetime import datetime
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from selenium.webdriver import DesiredCapabilities
+from platform import python_version, python_version_tuple
 
 
 log = logging.getLogger(__name__)
@@ -353,7 +354,7 @@ def post_ad(driver, ad, interactive):
             path_abs = os.path.join(config["glob_photo_path"], path)
             if not path_abs.endswith("/"):
                 path_abs += "/"
-            for filename in os.listdir(path_abs):
+            for filename in sorted(os.listdir(path_abs)):
                 if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
                     continue
                 file_path_abs = path_abs + filename
@@ -422,10 +423,6 @@ def session_create(config):
     log.info("Creating session")
 
     options = Options()
-    # for chromium driver
-    # add this option otherwise login is blocked when using selenium 
-    # https://stackoverflow.com/a/60649888/256002
-    # options.add_argument("disable-blink-features=AutomationControlled")
 
     if config.get('headless', False) is True:
         log.info("Headless mode")
@@ -434,15 +431,7 @@ def session_create(config):
     if config.get('webdriver_enabled') is False:
         options.set_preference("dom.webdriver.enabled", False)
 
-    # Avoid geckodriver detection on login
-    # https://stackoverflow.com/a/60626696/256002
-    profile = FirefoxProfile()
-    profile.set_preference("dom.webdriver.enabled", False)
-    profile.set_preference('useAutomationExtension', False)
-    profile.update_preferences()
-    desired = DesiredCapabilities.FIREFOX
-
-    driver = webdriver.Firefox(options=options, firefox_profile=profile, desired_capabilities=desired)
+    driver = webdriver.Firefox(options=options)
 
     log.info("New session is: %s %s" % (driver.session_id, driver.command_executor._url))
 
@@ -506,13 +495,16 @@ if __name__ == '__main__':
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
+            if int(python_version_tuple()[1]) < 7:
+                from backports.datetime_fromisoformat import MonkeyPatch
+                MonkeyPatch.patch_fromisoformat()
+
             dtLastUpdated = datetime.fromisoformat(ad["date_updated"])
         else:
             dtLastUpdated = dtNow
         dtDiff = dtNow - dtLastUpdated
 
-        if "enabled" in ad \
-                and ad["enabled"] == "1":
+        if "enabled" in ad and ad["enabled"] == "1":
             if "date_published" in ad:
                 log.info("\tAlready published (%d days ago)" % dtDiff.days)
                 if dtDiff.days > updateInterval:
