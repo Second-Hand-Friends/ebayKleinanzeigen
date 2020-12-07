@@ -60,3 +60,8 @@ config.json
 *.jpg
 .idea
 .DS_Store
+
+# VSC history extension
+.history
+# pictures for the ads
+data
