@@ -13,6 +13,7 @@ import getopt
 import json
 import logging
 import os
+from os import path
 import signal
 import sys
 import time
@@ -31,7 +32,7 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
-fh = logging.FileHandler('kleinanzeigen.log')
+fh = logging.FileHandler(path.join('..', 'data', f"{path.basename(__file__).split('.')[0]}.log"))
 fh.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler()
@@ -492,7 +493,7 @@ if __name__ == '__main__':
         log.info("Handling '%s'" % ad["title"])
 
         if "date_updated" in ad:
-            # python < 3.7 do not support datetime.datetime_fromisoformat()
+            # python < 3.7 does not support datetime.datetime_fromisoformat()
             # https://stackoverflow.com/a/60852111/256002
             if int(python_version_tuple()[1]) < 7:
                 from backports.datetime_fromisoformat import MonkeyPatch

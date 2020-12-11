@@ -1,5 +1,11 @@
 # ebayKleinanzeigen
 
+## Project structure
+
+* `ebayKleinanzeigen`
+  * `src`: python code
+  * `data`: place for `config.json`, `.log` file is saved here
+
 ## Prerequisites
 
 * config.json (from config.json.example)

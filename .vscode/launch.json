@@ -7,14 +7,11 @@
         {
             "name": "kleinanzeigen.py",
             "type": "python",
-            //"env": {
-            //    "PATH": "./lib/"
-            //},
             "request": "launch",
             "program": "kleinanzeigen.py",
             "console": "integratedTerminal",
             "args": [
-                "--profile", "config.json"
+                "--profile", "../data/config.json"
             ],
             "cwd": "${workspaceFolder}/src"
         }
