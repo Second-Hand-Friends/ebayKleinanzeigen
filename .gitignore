@@ -64,4 +64,6 @@ config.json
 # VSC history extension
 .history
 # pictures for the ads
-data
+src/data
+# virtual env
+src/venv

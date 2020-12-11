@@ -1,0 +1,6 @@
+{
+    "python.languageServer": "Pylance",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.pythonPath": "src/venv/bin/python",
+}
