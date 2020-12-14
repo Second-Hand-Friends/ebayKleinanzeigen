@@ -65,5 +65,3 @@ config.json
 .history
 # pictures for the ads
 data
-# virtual env
-src/venv
