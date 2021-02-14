@@ -30,9 +30,10 @@
       "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=161/245/other/null/",
       "photo_dir": "folder_name/or/subdirectory/with/images/",
       "additional_category_options": {
-          "foto.art_s": "Zubehör",
-          "foto.condition_s": "Gebraucht"
+        "handy_telekom.device_equipment_s": "Gerät",
+        "handy_telekom.condition_s": "Gebraucht",
+        "handy_telekom.versand_s": "Versand möglich"
       }
-    },
+    }
   ]
 }
