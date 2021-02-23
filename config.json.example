@@ -11,7 +11,9 @@
   "webdriver_enabled": false,
   "update_interval": 30, // number of days an ad has to be old in order to be reposted
   "ads": [
-    { "title": "Example 1",
+    {
+      "type": "OFFER",
+      "title": "Example 1",
       "desc": "... with a negotiable price (5 EUR) and some photos.",
       "enabled": "1",
       "price": "5",
@@ -21,7 +23,9 @@
       "photofiles": [ "file1.jpg", "file2.jpg" ],
       "zip" : "33333"
     },
-    { "title": "Example 2",
+    {
+      "type": "WANTED",
+      "title": "Example 2",
       "description_file" : "/abspath/to/file.txt", // will not read contents of "desc"
       "enabled": "1",
       "price": "10",
