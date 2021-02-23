@@ -217,6 +217,8 @@ def post_ad(driver, ad, interactive):
         return fRc
 
     # Fill form
+    if ad["type"] == "WANTED":
+        driver.find_element_by_id('adType2').click()
     title_input = driver.find_element_by_id('postad-title')
     title_input.click()
     title_input.send_keys(ad["title"])
