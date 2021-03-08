@@ -253,7 +253,10 @@ def post_ad(driver, ad, interactive):
             )
             Select(select_element).select_by_visible_text(value)
         except NoSuchElementException:
-            pass
+            try:
+                driver.find_element_by_xpath("//input[@id='%s']" % element_id).send_keys(value)
+            except NoSuchElementException:
+                pass
 
 
     text_area = driver.find_element_by_id("pstad-descrptn")
