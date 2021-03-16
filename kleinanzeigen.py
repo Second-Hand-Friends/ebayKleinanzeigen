@@ -521,7 +521,9 @@ if __name__ == '__main__':
 
         if fNeedsUpdate or fForceUpdate:
 
-            delete_ad(driver, ad)
+            # delete ad if it was published already
+            if "id" in ad or "date_published" in ad:
+                delete_ad(driver, ad)
 
             fPosted = post_ad(driver, ad, True)
             if not fPosted:
