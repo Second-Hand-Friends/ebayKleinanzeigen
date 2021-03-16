@@ -332,16 +332,16 @@ def post_ad(driver, ad, interactive):
             fileup = driver.find_element_by_xpath("//input[@type='file']")
             for path in ad["photofiles"]:
                 path_abs = config["glob_photo_path"] + path
-                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-new-thumbnail"))
                 log.debug("\tUploading image: %s" % path_abs)
                 fileup.send_keys(os.path.abspath(path_abs))
                 total_upload_time = 0
-                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")) and \
                         total_upload_time < 30:
                     fake_wait(500)
                     total_upload_time += 0.5
 
-                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
+                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")):
                     log.warning("\tCould not upload image: %s within %s seconds" % (path_abs, total_upload_time))
                 else:
                     log.debug("\tUploaded file in %s seconds" % total_upload_time)
@@ -360,16 +360,16 @@ def post_ad(driver, ad, interactive):
                 if not filename.lower().endswith((".jpg", ".jpeg", ".png", ".gif")):
                     continue
                 file_path_abs = path_abs + filename
-                uploaded_count = len(driver.find_elements_by_class_name("imagebox-thumbnail"))
+                uploaded_count = len(driver.find_elements_by_class_name("imagebox-new-thumbnail"))
                 log.debug("\tUploading image: %s" % file_path_abs)
                 fileup.send_keys(os.path.abspath(file_path_abs))
                 total_upload_time = 0
-                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")) and \
+                while uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")) and \
                         total_upload_time < 30:
                     fake_wait(500)
                     total_upload_time += 0.5
                 
-                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-thumbnail")):
+                if uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")):
                     log.warning("\tCould not upload image: %s within %s seconds" % (file_path_abs, total_upload_time))
                 else:
                     log.debug("\tUploaded file in %s seconds" % total_upload_time)
