@@ -74,7 +74,7 @@
 
 Now a browser window should start, login and fill out the fields automatically.
 
-## Installation Guide (MacOS, Tested on catalina)
+## Installation Guide (MacOS, Tested on Big Sur)
 
 ```bash
 # create new virtual env, for instance with conda
@@ -84,7 +84,7 @@ pip install selenium
 brew install geckodriver
 
 # if firefox is not installed yet
-brew cask install firefox
+brew install --cask firefox
 
 git clone https://github.com/donwayo/ebayKleinanzeigen
 
