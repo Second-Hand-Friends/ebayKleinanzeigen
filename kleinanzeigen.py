@@ -25,9 +25,9 @@ from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium_stealth import stealth
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -365,9 +365,9 @@ def post_ad(driver, ad, interactive):
                 fileup.send_keys(os.path.abspath(file_path_abs))
                 total_upload_time = 0
                 while uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")) and \
-                        total_upload_time < 30:
-                    fake_wait(500)
-                    total_upload_time += 0.5
+                        total_upload_time < 60:
+                    fake_wait(1000)
+                    total_upload_time += 1
                 
                 if uploaded_count == len(driver.find_elements_by_class_name("imagebox-new-thumbnail")):
                     log.warning("\tCould not upload image: %s within %s seconds" % (file_path_abs, total_upload_time))
@@ -424,17 +424,22 @@ def post_ad(driver, ad, interactive):
 def session_create(config):
     log.info("Creating session")
 
-    options = Options()
+    options = webdriver.ChromeOptions()
 
     if config.get('headless', False) is True:
         log.info("Headless mode")
         options.add_argument("--headless")
 
-    if config.get('webdriver_enabled') is False:
-        options.set_preference("dom.webdriver.enabled", False)
+    driver = webdriver.Chrome(options=options)
 
-    driver = webdriver.Firefox(options=options)
-
+    stealth(driver,
+        languages=["en-US", "en"],
+        vendor="Google Inc.",
+        platform="Win32",
+        webgl_vendor="Intel Inc.",
+        renderer="Intel Iris OpenGL Engine",
+        fix_hairline=True,
+        )
     log.info("New session is: %s %s" % (driver.session_id, driver.command_executor._url))
 
     return driver
