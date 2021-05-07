@@ -186,7 +186,7 @@ def post_ad_is_allowed(driver):
 
 
 def post_ad(driver, ad, interactive):
-    log.info("\tPublishing ad '...")
+    log.info("\tPublishing ad ...")
 
     if config['glob_phone_number'] is None:
         config['glob_phone_number'] = ''
