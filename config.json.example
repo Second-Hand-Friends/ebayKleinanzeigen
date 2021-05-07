@@ -18,7 +18,7 @@
       "enabled": "1",
       "price": "5",
       "price_type": "NEGOTIABLE",
-      "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=210/223/sonstige_autoteile&isParent=false",
+      "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=80/88/sofas_sitzgarnituren&isParent=false",
       "shipping_type": "PICKUP",
       "photofiles": [ "file1.jpg", "file2.jpg" ],
       "zip" : "33333"
@@ -31,7 +31,7 @@
       "price": "10",
       "shipping_type": "SHIPPING",
       "price_type": "FIXED",
-      "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=161/245/other/null/",
+      "caturl": "https://www.ebay-kleinanzeigen.de/p-kategorie-aendern.html#?path=80/88/sofas_sitzgarnituren&isParent=false",
       "photo_dir": "folder_name/or/subdirectory/with/images/",
       "additional_category_options": {
           "foto.art_s": "Zubehör",
