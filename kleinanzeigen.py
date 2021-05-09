@@ -265,7 +265,7 @@ def post_ad(driver, ad, interactive):
 
     if ad.get("description_file", None) is not None:
         description_file = ad.get("description_file")
-        with open(description_file, "r") as f:
+        with open(description_file, "r", encoding="utf-8") as f:
             description_lines = f.readlines()
     else:
         desc = ad.get("desc")
@@ -277,7 +277,6 @@ def post_ad(driver, ad, interactive):
 
     for p in description_lines:
         text_area.send_keys(p)
-        text_area.send_keys(Keys.RETURN)
 
     fake_wait()
 
@@ -429,6 +428,10 @@ def session_create(config):
     if config.get('headless', False) is True:
         log.info("Headless mode")
         options.add_argument("--headless")
+
+    if os.path.isfile("./chrome-win/chrome.exe"):
+        log.info("Found ./chrome-win/chrome.exe")
+        options.binary_location = "./chrome-win/chrome.exe"
 
     driver = webdriver.Chrome(options=options)
 
