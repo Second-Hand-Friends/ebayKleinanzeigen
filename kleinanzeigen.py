@@ -429,6 +429,10 @@ def session_create(config):
         log.info("Headless mode")
         options.add_argument("--headless")
 
+    if config.get('no_sandbox', False) is True:
+        log.info("No Sandbox mode")
+        options.add_argument('--no-sandbox')
+
     if os.path.isfile("./chrome-win/chrome.exe"):
         log.info("Found ./chrome-win/chrome.exe")
         options.binary_location = "./chrome-win/chrome.exe"
