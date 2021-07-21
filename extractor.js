@@ -19,12 +19,12 @@ let ad = {}
 
 // get some data from javascript object "BelenConf"
  let cat1 = null,
-	 cat2 = null,
-	 cat3 = null,
-	 cat1Name = null,
-	 cat2Name = null,
-	 cat3Name = null,
-	 id = null
+     cat2 = null,
+     cat3 = null,
+     cat1Name = null,
+     cat2Name = null,
+     cat3Name = null,
+     id = null
 
 if (typeof BelenConf == "object") {
 
@@ -105,26 +105,25 @@ let additional_category_options = {}
 let count = 0
 let attr = document.querySelectorAll("div.formgroup.pstad-attrs select, div.formgroup.pstad-attrs input")
 if (attr != null) for (let i = 0; i < attr.length; i++ ) {
-	//console.log(attr[i])
 	if (attr[i].tagName == "INPUT") {
 		if (attr[i].type == "text") {
-			console.log("INPUT text", attr[i].id, attr[i].value)
-        	if (attr[i].value != "") {   // Add only items, which were filled with a value
-        		additional_category_options[attr[i].id] = attr[i].value
+			//console.log("INPUT text", attr[i].id, attr[i].value)
+        		if (attr[i].value != "") {   // Add only items, which were filled with a value
+        			additional_category_options[attr[i].id] = attr[i].value
 				count++
 			}
 		}
 		if (attr[i].type == "checkbox") {
-			console.log("INPUT checkbox", attr[i].id, attr[i].checked)
-        	if (attr[i].checked) {   // Add only items, which are checked
-        		additional_category_options[attr[i].id] = attr[i].checked
+			//console.log("INPUT checkbox", attr[i].id, attr[i].checked)
+        		if (attr[i].checked) {   // Add only items, which are checked
+        			additional_category_options[attr[i].id] = attr[i].checked
 				count++
-		}
+			}
 		}
 
 	}
 	if ( attr[i].tagName == "SELECT") {
-		console.log("SELECT" ,attr[i].id, attr[i].selectedIndex, attr[i].options[attr[i].selectedIndex].text)
+		//console.log("SELECT" ,attr[i].id, attr[i].selectedIndex, attr[i].options[attr[i].selectedIndex].text)
 		if (attr[i].options[attr[i].selectedIndex].text.indexOf("wählen") < 0  ) { // add only selected items
 			additional_category_options[attr[i].id] = attr[i].options[attr[i].selectedIndex].text
 			count++
