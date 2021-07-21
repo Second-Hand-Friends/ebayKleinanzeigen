@@ -1,13 +1,17 @@
-// This script can be used to get needed data fields, from manually filling 
-// the kleinanzeigen form. Simply fill in all data after clicking "Anzeige aufgeben", or "Bearbeiten"
-// and open Google Chrome developer tools, right click on "Untersuchen" or press CMD+ALT+I (mac os)
-// There select the Tab "console" and copy the full text of this script into it and press RETURN
+// This script can be used to get the needed data fields, from manualy filling the kleinanzeigen
+// form. Simply fill in all data in a Chrome browser, after clicking "Anzeige aufgeben", or "Bearbeiten"
+// and open developer tools (right click on "Untersuchen" or press CMD+ALT+I). Select the Tab "console" 
+// and copy the full text of this script into it and press RETURN
 // it will show you the Data, like needed for an ad in config.json.
 
 // NOTES
-// Unfortunatly the up to now the kleinanzeigen.py script have no handling for checkboxes, like 
-// used i.e. for cars. a handling for this need to be added to the kleinanzeigen.py script
-
+// Unfortunatly up to now the kleinanzeigen.py script have no handling for checkboxes, like 
+// used i.e. for offers of cars. a handling for this need to be added to the kleinanzeigen.py script
+// also a handling for posterType (PRIVATE or COMMERCIAL) is not implemented there up to now.
+// it is not possible to get the original picture paths from your disk, for refference the links
+// to the pictures on the ebay plattform will be included as "imgUsed"
+// also "date_published" is only the time of running the script
+// the "id" will be only included, when editing a still active offer, not when creating a new one. 
 
 function getAd () {
 
