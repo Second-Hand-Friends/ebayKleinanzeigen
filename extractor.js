@@ -133,8 +133,6 @@ if (attr != null) for (let i = 0; i < attr.length; i++ ) {
 }
 if (count > 0) ad.additional_category_options = additional_category_options
 
-
-
 console.log(JSON.stringify(ad,null,4))
 }
 
