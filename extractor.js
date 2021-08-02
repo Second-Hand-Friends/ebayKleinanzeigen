@@ -1,4 +1,4 @@
-// This script can be used to get the needed data fields, from manualy filling the kleinanzeigen
+// This script can be used to get the needed data fields, from manually filling the kleinanzeigen
 // form. Simply fill in all data in a Chrome browser, after clicking "Anzeige aufgeben", or "Bearbeiten"
 // and open developer tools (right click on "Untersuchen" or press CMD+ALT+I). Select the Tab "console" 
 // and copy the full text of this script into it and press RETURN
@@ -133,6 +133,8 @@ if (attr != null) for (let i = 0; i < attr.length; i++ ) {
 if (count > 0) ad.additional_category_options = additional_category_options
 
 console.log(JSON.stringify(ad,null,4))
+// return ad	
+	
 }
 
 getAd()
