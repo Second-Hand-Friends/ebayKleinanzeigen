@@ -65,3 +65,6 @@ config.json
 .history
 # pictures for the ads
 data
+# default configuration files
+config.json
+config.jsonc
