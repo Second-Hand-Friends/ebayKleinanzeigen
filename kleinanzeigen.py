@@ -476,11 +476,6 @@ def session_create(config):
     if os.path.isfile("./chrome-win/chrome.exe"):
         log.info("Found ./chrome-win/chrome.exe")
         options.binary_location = "./chrome-win/chrome.exe"
-<<<<<<< HEAD
-
-    #options.add_extension(r'E:\Google Drive\Verkauf\_auto\ebayKleinanzeigen\chrome-extensions\crobot.crx')
-=======
->>>>>>> upstream/master
 
     driver = webdriver.Chrome(options=options)
 
