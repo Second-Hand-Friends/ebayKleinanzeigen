@@ -72,3 +72,8 @@ kleinanzeigen.json
 .gitignore
 .gitignore
 *.json
+.vscode/
+
+#chrome
+chrome-win/
+chromedriver.exe
