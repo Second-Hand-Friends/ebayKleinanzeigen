@@ -68,3 +68,7 @@ data
 # default configuration files
 config.json
 config.jsonc
+kleinanzeigen.json
+.gitignore
+.gitignore
+*.json
