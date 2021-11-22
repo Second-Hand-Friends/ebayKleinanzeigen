@@ -320,12 +320,12 @@ def post_ad(driver, ad, interactive):
 
     if (ad['shipping_type']) != 'NONE':
         try:
-            select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
-            shipment_select = Select(select_element)
-            log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
             if (ad['shipping_type']) == 'PICKUP':
-                shipment_select.select_by_visible_text("Nur Abholung")
+                ship_button = driver.find_element_by_xpath("/html/body/div[1]/form/fieldset[2]/div[3]/div/div/div[1]/div[1]/div[2]/div/label[2]/input")
+                ship_button.click()
             if (ad['shipping_type']) == 'SHIPPING':
+                select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
+                shipment_select = Select(select_element)
                 shipment_select.select_by_visible_text("Versand möglich")
             fake_wait()
         except NoSuchElementException:
@@ -431,20 +431,17 @@ def post_ad(driver, ad, interactive):
             log.info("\tCaptcha input needed, but running in non-interactive mode! Skipping ...")
             fRc = False
 
-    submit_button = driver.find_element_by_id('pstad-frmprview')
-    if submit_button:
-        submit_button.click()
-
-    fake_wait()
-
     if fRc:
         try:
-            submit_button = driver.find_element_by_id('prview-btn-post')
+            submit_button = driver.find_element_by_id('pstad-submit')
             if submit_button:
                 submit_button.click()
-        except NoSuchElementException:
+        except NoSuchElementException as e_msg:
+            log.debug(e_msg)
             pass
-
+        
+        WebDriverWait(driver, 6).until(EC.url_contains('adId='))
+        
         try:
             parsed_q = urllib.parse.parse_qs(urllib.parse.urlparse(driver.current_url).query)
             add_id = parsed_q.get('adId', None)[0]
@@ -476,6 +473,8 @@ def session_create(config):
     if os.path.isfile("./chrome-win/chrome.exe"):
         log.info("Found ./chrome-win/chrome.exe")
         options.binary_location = "./chrome-win/chrome.exe"
+
+    #options.add_extension(r'E:\Google Drive\Verkauf\_auto\ebayKleinanzeigen\chrome-extensions\crobot.crx')
 
     driver = webdriver.Chrome(options=options)
 
