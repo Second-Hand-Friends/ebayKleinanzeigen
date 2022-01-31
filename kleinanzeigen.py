@@ -59,14 +59,27 @@ def login(config):
     input_email = config['glob_username']
     input_pw = config['glob_password']
     log.info("Login with account email: " + input_email)
-    driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
-
+    
+    driver.get('https://www.ebay-kleinanzeigen.de')
+              
     # wait for the 'accept cookie' banner to appear
     WebDriverWait(driver, 6).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
-
+    
+    fake_wait(2000)   
+    
+    driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
+    
+    fake_wait(2000)
+    
     text_area = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'login-email')))
     text_area.send_keys(input_email)
     fake_wait(200)
+
+    has_captcha = login_has_captcha(driver)
+    if has_captcha:
+        log.info("\t*** Manual captcha input needed! ***")
+        log.info("\tFill out captcha but DON'T submit. After that press Enter here to continue ...")
+        wait_key()
 
     text_area = driver.find_element_by_id('login-password')
     text_area.send_keys(input_pw)
@@ -95,26 +108,38 @@ def delete_ad(driver, ad):
 
     if "id" in ad:
         try:
-            ad_id_elem = driver.find_element_by_xpath("//a[@data-adid='%s']" % ad["id"])
+            ad_id_elem = driver.find_element_by_xpath("//li[@data-adid='%s']" % ad["id"])
         except NoSuchElementException:
             log.info("\tNot found by ID")
+            try: 
+                next_page = driver.find_element_by_class_name("Pagination--next")
+                next_page.click()
+                fake_wait()
+                ad_id_elem = driver.find_element_by_xpath("//li[@data-adid='%s']" % ad["id"])
+            except NoSuchElementException:
+                log.info("\tNot found by ID on second page")
 
     if ad_id_elem is None:
         try:
-            ad_id_elem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
+            ad_id_elem = driver.find_element_by_xpath("//article[.//a[contains(text(), '%s')]]" % ad["title"])
         except NoSuchElementException:
             log.info("\tNot found by title")
 
     if ad_id_elem is not None:
         try:
-            btn_del = ad_id_elem.find_elements_by_class_name("managead-listitem-action-delete")[1]
+            btn_del = ad_id_elem.find_element_by_class_name("managead-listitem-action-delete")
             btn_del.click()
 
             fake_wait()
-
-            btn_confirm_del = driver.find_element_by_id("modal-bulk-delete-ad-sbmt")
+            
+            toogle_delete_reason = driver.find_element_by_id("DeleteWithoutReason")
+            toogle_delete_reason.click()
+            
+            fake_wait()
+            
+            btn_confirm_del = driver.find_element_by_id("sold-celebration-sbmt")
             btn_confirm_del.click()
-
+            
             log.info("\tAd deleted")
             fake_wait(randint(2000, 3000))
             webdriver.ActionChains(driver).send_keys(Keys.ESCAPE).perform()
@@ -152,6 +177,19 @@ def wait_key():
 
     return result
 
+def login_has_captcha(driver):
+    has_captcha = False
+
+    try:
+        captcha_field = driver.find_element_by_xpath('//*[@id="login-recaptcha"]')
+        if captcha_field:
+            has_captcha = True
+    except NoSuchElementException:
+        pass
+
+    log.info(f"Captcha: {has_captcha}")
+
+    return has_captcha
 
 def post_ad_has_captcha(driver):
     has_captcha = False
@@ -282,12 +320,12 @@ def post_ad(driver, ad, interactive):
 
     if (ad['shipping_type']) != 'NONE':
         try:
-            select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
-            shipment_select = Select(select_element)
-            log.debug("\t shipping select found with id: %s" % select_element.get_attribute('id'))
             if (ad['shipping_type']) == 'PICKUP':
-                shipment_select.select_by_visible_text("Nur Abholung")
+                ship_button = driver.find_element_by_xpath("/html/body/div[1]/form/fieldset[2]/div[3]/div/div/div[1]/div[1]/div[2]/div/label[2]/input")
+                ship_button.click()
             if (ad['shipping_type']) == 'SHIPPING':
+                select_element = driver.find_element_by_css_selector('select[id$=".versand_s"]')
+                shipment_select = Select(select_element)
                 shipment_select.select_by_visible_text("Versand möglich")
             fake_wait()
         except NoSuchElementException:
@@ -296,7 +334,13 @@ def post_ad(driver, ad, interactive):
     text_area = driver.find_element_by_id('pstad-price')
     if ad["price_type"] != 'GIVE_AWAY':
         text_area.send_keys(ad["price"])
-    price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
+        try:
+            price = driver.find_element_by_xpath("//input[@name='priceType' and @value='%s']" % ad["price_type"])
+        except NoSuchElementException:
+            try:
+                price = driver.find_element_by_xpath("//select[@name='priceType']/option[@value='%s']" % ad["price_type"])
+            except NoSuchElementException:
+                raise Exception('Cannot find price type selection!')        
     price.click()
     fake_wait()
 
@@ -377,12 +421,6 @@ def post_ad(driver, ad, interactive):
 
     fake_wait()
 
-    submit_button = driver.find_element_by_id('pstad-frmprview')
-    if submit_button:
-        submit_button.click()
-
-    fake_wait()
-
     has_captcha = post_ad_has_captcha(driver)
     if has_captcha:
         if interactive:
@@ -395,12 +433,15 @@ def post_ad(driver, ad, interactive):
 
     if fRc:
         try:
-            submit_button = driver.find_element_by_id('prview-btn-post')
+            submit_button = driver.find_element_by_id('pstad-submit')
             if submit_button:
                 submit_button.click()
-        except NoSuchElementException:
+        except NoSuchElementException as e_msg:
+            log.debug(e_msg)
             pass
-
+        
+        WebDriverWait(driver, 6).until(EC.url_contains('adId='))
+        
         try:
             parsed_q = urllib.parse.parse_qs(urllib.parse.urlparse(driver.current_url).query)
             add_id = parsed_q.get('adId', None)[0]
@@ -432,6 +473,8 @@ def session_create(config):
     if os.path.isfile("./chrome-win/chrome.exe"):
         log.info("Found ./chrome-win/chrome.exe")
         options.binary_location = "./chrome-win/chrome.exe"
+
+    #options.add_extension(r'E:\Google Drive\Verkauf\_auto\ebayKleinanzeigen\chrome-extensions\crobot.crx')
 
     driver = webdriver.Chrome(options=options)
 

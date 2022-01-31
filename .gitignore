@@ -68,3 +68,13 @@ data
 # default configuration files
 config.json
 config.jsonc
+kleinanzeigen.json
+.gitignore
+.gitignore
+*.json
+.vscode/
+
+#chrome
+chrome-win/
+chrome-extensions/
+chromedriver.exe
