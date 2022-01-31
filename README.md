@@ -1,3 +1,5 @@
+> Development of this client has been stopped. Please use https://github.com/Second-Hand-Friends/kleinanzeigen-bot
+
 # ebayKleinanzeigen
 
 ## Prerequisites
