@@ -43,6 +43,8 @@ log.addHandler(ch)
 log.addHandler(fh)
 
 
+print(end='\a')
+
 def profile_read(profile, config):
     if os.path.isfile(profile):
         with open(profile, encoding="utf-8") as file:
@@ -62,15 +64,15 @@ def login(config):
     driver.get('https://www.ebay-kleinanzeigen.de/m-einloggen.html')
 
     # wait for the 'accept cookie' banner to appear
-    WebDriverWait(driver, 6).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
+    WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.ID, 'gdpr-banner-accept'))).click()
 
     text_area = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.ID, 'login-email')))
     text_area.send_keys(input_email)
-    fake_wait(200)
+    fake_wait(120)
 
     text_area = driver.find_element_by_id('login-password')
     text_area.send_keys(input_pw)
-    fake_wait(200)
+    fake_wait(91)
 
     submit_button = driver.find_element_by_id('login-submit')
     submit_button.click()
@@ -80,7 +82,7 @@ def fake_wait(ms_sleep=None):
     if ms_sleep is None:
         ms_sleep = randint(600, 2000)
     if ms_sleep < 100:
-        ms_sleep = 100
+        ms_sleep = randint(70, 105)
     log.debug("Waiting %d ms ..." % ms_sleep)
     time.sleep(ms_sleep / 1000)
 
@@ -374,6 +376,8 @@ def post_ad(driver, ad, interactive):
                     log.debug("\tUploaded file in %s seconds" % total_upload_time)
         except NoSuchElementException as e:
             log.error(e)
+            os.system('Say ' + str(e))
+
 
     fake_wait()
 
@@ -416,6 +420,8 @@ def post_ad(driver, ad, interactive):
 
     if fRc is False:
         log.info("\tError publishing ad")
+        os.system('Say ' + 'Error publishing ad')
+
 
     return fRc
 
@@ -460,6 +466,7 @@ if __name__ == '__main__':
     try:
         aOpts, aArgs = getopt.gnu_getopt(sys.argv[1:], "ph", ["profile=", "help"])
     except getopt.error as msg:
+        os.system('Say ' + str(msg))
         print(msg)
         print("For help use --help")
         sys.exit(2)
