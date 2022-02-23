@@ -95,24 +95,29 @@ def delete_ad(driver, ad):
 
     if "id" in ad:
         try:
-            ad_id_elem = driver.find_element_by_xpath("//a[@data-adid='%s']" % ad["id"])
+            ad_id_elem = driver.find_element_by_xpath("//li[@data-adid='%s']" % ad["id"])
         except NoSuchElementException:
             log.info("\tNot found by ID")
 
     if ad_id_elem is None:
         try:
-            ad_id_elem = driver.find_element_by_xpath("//a[contains(text(), '%s')]/../../../../.." % ad["title"])
+            ad_id_elem = driver.find_element_by_xpath("//article[.//a[contains(text(), '%s')]]" % ad["title"])
         except NoSuchElementException:
             log.info("\tNot found by title")
 
     if ad_id_elem is not None:
         try:
-            btn_del = ad_id_elem.find_elements_by_class_name("managead-listitem-action-delete")[1]
+            btn_del = ad_id_elem.find_element_by_class_name("managead-listitem-action-delete")
             btn_del.click()
 
             fake_wait()
 
-            btn_confirm_del = driver.find_element_by_id("modal-bulk-delete-ad-sbmt")
+            toogle_delete_reason = driver.find_element_by_id("DeleteWithoutReason")
+            toogle_delete_reason.click()
+
+            fake_wait()
+
+            btn_confirm_del = driver.find_element_by_id("sold-celebration-sbmt")
             btn_confirm_del.click()
 
             log.info("\tAd deleted")
