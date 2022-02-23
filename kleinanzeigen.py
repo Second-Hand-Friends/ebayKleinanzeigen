@@ -194,22 +194,32 @@ def post_ad(driver, ad, interactive):
     if ad["price_type"] not in ['FIXED', 'NEGOTIABLE', 'GIVE_AWAY']:
         ad["price_type"] = 'NEGOTIABLE'
 
+    category_selected = False
+
     # Navigate to page
-    driver.get('https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben.html')
+    driver.get('https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben-schritt2.html')
     fake_wait(randint(2000, 3500))
 
-    category_selected = False
     try:
-      driver.find_element_by_id('pstad-lnk-chngeCtgry')
-      log.info("Using new layout")
-    except:
-      log.info("Using old layout")
-      # legacy handling for old page layout where you have to first select the category (currently old and new layout are served randomly)
-      driver.get(ad["caturl"].replace('p-kategorie-aendern', 'p-anzeige-aufgeben'))
-      fake_wait(300)
-      driver.find_element_by_css_selector("#postad-step1-sbmt button").click()
-      fake_wait(300)
-      category_selected = True
+        driver.find_element_by_id('pstad-lnk-chngeCtgry')
+        log.info("Using new layout")
+    except NoSuchElementException:
+        driver.get('https://www.ebay-kleinanzeigen.de/p-anzeige-aufgeben.html')
+        fake_wait(randint(2000, 3500))
+
+        try:
+            driver.find_element_by_id('pstad-lnk-chngeCtgry')
+            log.info("Using new layout")
+
+        except NoSuchElementException:
+            log.info("Using old layout")
+            sys.exit(1)
+            # legacy handling for old page layout where you have to first select the category (currently old and new layout are served randomly)
+            driver.get(ad["caturl"].replace('p-kategorie-aendern', 'p-anzeige-aufgeben'))
+            fake_wait(300)
+            driver.find_element_by_css_selector("#postad-step1-sbmt button").click()
+            fake_wait(300)
+            category_selected = True
 
     # Check if posting an ad is allowed / possible
     fRc = post_ad_is_allowed(driver)
